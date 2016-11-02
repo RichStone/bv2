@@ -29,7 +29,7 @@ public class Perspective extends JPanel {
 	private JComboBox<String> methodList;	// the selected interpolation method
 	private JSlider angleSlider;			// the selected angle
 	private JLabel statusLine;				// to print some status text
-	private double angle = 0.0;				// current angle in degrees
+	private double angle = 0.001;				// current angle in degrees
 	
 	/**
 	 * Constructor. Constructs the layout of the GUI components and loads the initial image.
@@ -246,7 +246,7 @@ public class Perspective extends JPanel {
 		long startTime = System.currentTimeMillis();
 		
     	switch(methodList.getSelectedIndex()) {
-    	case 0:	// Nearest Neigbour
+    	case 0:	// Nearest Neighbor
     		calculateNearestNeigbour(srcPixels, srcWidth, srcHeight, dstPixels, dstWidth, dstHeight, angle);
     		break;
     	case 1:	// Bilinear Interpolation
@@ -273,10 +273,74 @@ public class Perspective extends JPanel {
      * @param dstHeight - destination image height
      * @param degrees - angle in degrees for the perspective
      */
-    void calculateNearestNeigbour(int srcPixels[], int srcWidth, int srcHeight, int dstPixels[], int dstWidth, int dstHeight, double degrees) {
-		
-    	/**** TODO: your implementation goes here ****/
+//    void calculateNearestNeigbour(int srcPixels[], int srcWidth, int srcHeight, int dstPixels[], int dstWidth, int dstHeight, double degrees) 
+//    {
+//		double s = 0.001;
+//    	double rotationCosAngle = Math.cos(degrees / 180 * Math.PI);
+//    	double rotationSinAngle = Math.sin(degrees / 180 * Math.PI);
+//    	
+//    	for(int y = 0; y < dstHeight; y++) {
+//    		
+//    		int yDes = y - (dstHeight / 2);
+//    		int ys = (int)(yDes / (rotationCosAngle - yDes * s * rotationSinAngle));
+//    		int ySrc = ys + srcHeight / 2;
+//    		
+//			for(int x = 0; x < dstWidth; x++) { 
+//
+//				
+//				int xNew = (int)(x / (s * Math.sin(degrees) * y + 1));
+//				int yNew = (int)(Math.cos(degrees) * y /(s * Math.sin(degrees) * y + 1));
+//				
+//				posNew = yNew * dstWidth + xNew;
+//				
+//				dstPixels[posNew] = srcPixels[pos];
+//			}
+//    	}
+//    	
+//    }
+    
+    
+    void calculateNearestNeigbour(int srcPixels[], int srcWidth, int srcHeight, int dstPixels[], int dstWidth, int dstHeight, double degrees)
+    {
+    	for(int yNew = 0; yNew < dstHeight; yNew++) {
+    		for(int xNew = 0; xNew < dstWidth; xNew++) {
+
+    			int xsrc = calculateOldPosition(xNew, yNew, srcHeight, srcWidth, dstHeight, dstWidth, degrees)[0];
+    			int ysrc = calculateOldPosition(xNew, yNew, srcHeight, srcWidth, dstHeight, dstWidth, degrees)[1];
+    			
+    			int dstPos = (int)(Math.round(yNew * dstWidth + xNew));
+    			int srcPos = (int)(ysrc * srcWidth + xsrc);
+
+    			if(xsrc < 0 || xsrc > srcWidth -1 || ysrc < 0 || ysrc > srcHeight -1){
+
+    				dstPixels[dstPos] = 0xffffffff;
+
+    			}else{
+
+    				dstPixels[dstPos] = srcPixels[srcPos];
+
+    			}
+    		}
+    	}
+    }
+    
+    int[] calculateOldPosition(int xNew, int yNew, int srcHeight, int srcWidth, int dstHeight, int dstWidth, double degrees ) 
+    {
+    	double s = 0.001;
+    	double rotationAngleCos = Math.cos(degrees / 180 * Math.PI);
+    	double rotationAngleSin = Math.sin(degrees / 180 * Math.PI);
     	
+    	int yd = yNew - (dstHeight / 2);
+		int ys = (int)(yd / (rotationAngleCos - yd * s * rotationAngleSin));
+		int ysrc = ys + srcHeight / 2;
+		
+		int xd = xNew - (dstWidth / 2);
+		int xs = (int)(xd * (s * rotationAngleSin * ys + 1));
+		int xsrc = xs + srcWidth / 2;
+		
+		int [] srcCoordinates = {xsrc, ysrc};
+				
+		return  srcCoordinates;
     }
  
     /**
@@ -289,10 +353,73 @@ public class Perspective extends JPanel {
      * @param dstHeight - destination image height
      * @param degrees - angle in degrees for the perspective
      */
-    void calculateBilinear(int srcPixels[], int srcWidth, int srcHeight, int dstPixels[], int dstWidth, int dstHeight, double degrees) {
-		
-    	/**** TODO: your implementation goes here ****/
-    	
+    void calculateBilinear(int srcPixels[], int srcWidth, int srcHeight, int dstPixels[], int dstWidth, int dstHeight, double degrees) 
+    {
+    	for(int yNew = 0; yNew < dstHeight; yNew++){
+    		for(int xNew = 0; xNew < dstWidth; xNew++){
+
+    			int xOld = calculateOldPosition(xNew, yNew, srcHeight, srcWidth, dstHeight, dstWidth, degrees)[0];
+    			int yOld = calculateOldPosition(xNew, yNew, srcHeight, srcWidth, dstHeight, dstWidth, degrees)[1];
+    			
+    			double h = yOld % 1;
+    			double v = xOld % 1;
+
+    			int dstPos = (int)(Math.round(yNew * dstWidth + xNew));
+    			int srcPos = (int)(yOld * srcWidth + xOld);
+
+    			if(xOld < 0 || xOld > srcWidth -1 || yOld < 0 || yOld > srcHeight -1){
+
+    				dstPixels[dstPos] = 0xffffffff;
+
+    			}
+    			else
+    			{
+    				int rgb[] = new int[3];
+    				int[] a, b, c, d;
+
+    				//upper left side
+    				if (xOld < 1 || xOld > srcWidth){
+    					a = extractRGB(0xffffffff);
+    				}
+    				else{
+    					a = extractRGB(srcPixels[srcPos]);
+    				}
+    				//upper right side
+    				if (xOld > srcWidth - 2){
+    					b = extractRGB(0xffffffff);
+    				}
+    				else if (xOld >= 0 && xOld <= 1){
+    					b = extractRGB(srcPixels[srcPos]);
+    				}
+    				else{
+    					b = extractRGB(srcPixels[srcPos + 1]);
+    				}
+    				 //bottom left side
+    				if (xOld < 1 || xOld > srcWidth || yOld > srcHeight -2){
+    					c = extractRGB(0xffffffff);
+    				}
+    				else{
+    					c = extractRGB(srcPixels[srcPos + srcWidth]);
+    				}
+    				//bottom right  side
+    				if (xOld > srcWidth -2 || yOld > srcHeight -2){
+    					d = extractRGB(0xffffffff);
+    				}else if (xOld <= 0){
+    					d = extractRGB(srcPixels[srcPos + srcWidth]);
+    				}else{
+    					d = extractRGB(srcPixels[srcPos + srcWidth + 1]);
+    				}
+    				for (int i = 0; i < 3; i++) {
+    					rgb[i] = (int)(Math.round(a[i] * (1-h) * (1-v) + b[i] * h * (1-v) + c[i] * (1-h) * v + d[i] * h * v));
+    				}
+    				dstPixels[dstPos] = 0xff000000 + ((rgb[0] & 0xff) << 16) + ((rgb[1] & 0xff) << 8) + (rgb[2] & 0xff);
+    			}
+    		}
+    	}
+    }
+
+    private int[] extractRGB(int pixel) {
+    	return new int[] { pixel >> 16 & 0xff, pixel >> 8 & 0xff, pixel & 0xff };
     }
  
 
