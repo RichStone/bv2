@@ -263,59 +263,21 @@ public class Perspective extends JPanel {
     	}
     }
     
-    /**
-     * Image perspective algorithm using nearest neighbour image rendering
-     * @param srcPixels - source image pixel array of loaded image (ARGB values)
-     * @param srcWidth - source image width
-     * @param srcHeight - source image height
-     * @param dstPixels - destination image pixel array to be filled (ARGB values)
-     * @param dstWidth - destination image width
-     * @param dstHeight - destination image height
-     * @param degrees - angle in degrees for the perspective
-     */
-//    void calculateNearestNeigbour(int srcPixels[], int srcWidth, int srcHeight, int dstPixels[], int dstWidth, int dstHeight, double degrees) 
-//    {
-//		double s = 0.001;
-//    	double rotationCosAngle = Math.cos(degrees / 180 * Math.PI);
-//    	double rotationSinAngle = Math.sin(degrees / 180 * Math.PI);
-//    	
-//    	for(int y = 0; y < dstHeight; y++) {
-//    		
-//    		int yDes = y - (dstHeight / 2);
-//    		int ys = (int)(yDes / (rotationCosAngle - yDes * s * rotationSinAngle));
-//    		int ySrc = ys + srcHeight / 2;
-//    		
-//			for(int x = 0; x < dstWidth; x++) { 
-//
-//				
-//				int xNew = (int)(x / (s * Math.sin(degrees) * y + 1));
-//				int yNew = (int)(Math.cos(degrees) * y /(s * Math.sin(degrees) * y + 1));
-//				
-//				posNew = yNew * dstWidth + xNew;
-//				
-//				dstPixels[posNew] = srcPixels[pos];
-//			}
-//    	}
-//    	
-//    }
-    
-    
     void calculateNearestNeigbour(int srcPixels[], int srcWidth, int srcHeight, int dstPixels[], int dstWidth, int dstHeight, double degrees)
     {
     	for(int yNew = 0; yNew < dstHeight; yNew++) {
     		for(int xNew = 0; xNew < dstWidth; xNew++) {
 
-    			int xsrc = calculateOldPosition(xNew, yNew, srcHeight, srcWidth, dstHeight, dstWidth, degrees)[0];
-    			int ysrc = calculateOldPosition(xNew, yNew, srcHeight, srcWidth, dstHeight, dstWidth, degrees)[1];
+    			int xsrc = calculatePosition(xNew, yNew, srcHeight, srcWidth, dstHeight, dstWidth, degrees)[0];
+    			int ysrc = calculatePosition(xNew, yNew, srcHeight, srcWidth, dstHeight, dstWidth, degrees)[1];
     			
-    			int dstPos = (int)(Math.round(yNew * dstWidth + xNew));
+    			int dstPos = (int)(yNew * dstWidth + xNew);
     			int srcPos = (int)(ysrc * srcWidth + xsrc);
 
-    			if(xsrc < 0 || xsrc > srcWidth -1 || ysrc < 0 || ysrc > srcHeight -1){
-
+    			if(xsrc < 0 || xsrc > srcWidth -1 || ysrc < 0 || ysrc > srcHeight -1) {
     				dstPixels[dstPos] = 0xffffffff;
-
-    			}else{
+    			}
+    			else{
 
     				dstPixels[dstPos] = srcPixels[srcPos];
 
@@ -324,7 +286,7 @@ public class Perspective extends JPanel {
     	}
     }
     
-    int[] calculateOldPosition(int xNew, int yNew, int srcHeight, int srcWidth, int dstHeight, int dstWidth, double degrees ) 
+    int[] calculatePosition(int xNew, int yNew, int srcHeight, int srcWidth, int dstHeight, int dstWidth, double degrees ) 
     {
     	double s = 0.001;
     	double rotationAngleCos = Math.cos(degrees / 180 * Math.PI);
@@ -339,7 +301,7 @@ public class Perspective extends JPanel {
 		int xsrc = xs + srcWidth / 2;
 		
 		int [] srcCoordinates = {xsrc, ysrc};
-				
+		
 		return  srcCoordinates;
     }
  
@@ -358,13 +320,13 @@ public class Perspective extends JPanel {
     	for(int yNew = 0; yNew < dstHeight; yNew++){
     		for(int xNew = 0; xNew < dstWidth; xNew++){
 
-    			int xOld = calculateOldPosition(xNew, yNew, srcHeight, srcWidth, dstHeight, dstWidth, degrees)[0];
-    			int yOld = calculateOldPosition(xNew, yNew, srcHeight, srcWidth, dstHeight, dstWidth, degrees)[1];
+    			int xOld = calculatePosition(xNew, yNew, srcHeight, srcWidth, dstHeight, dstWidth, degrees)[0];
+    			int yOld = calculatePosition(xNew, yNew, srcHeight, srcWidth, dstHeight, dstWidth, degrees)[1];
     			
     			double h = yOld % 1;
     			double v = xOld % 1;
 
-    			int dstPos = (int)(Math.round(yNew * dstWidth + xNew));
+    			int dstPos = (int)(yNew * dstWidth + xNew);
     			int srcPos = (int)(yOld * srcWidth + xOld);
 
     			if(xOld < 0 || xOld > srcWidth -1 || yOld < 0 || yOld > srcHeight -1){
