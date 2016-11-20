@@ -265,7 +265,8 @@ public class Morph extends JPanel {
 		
 		// This implements a simple nearest neighbor scaling.
 		// You may replace it by a bilinear scaling for better visual results
-		
+		// renamed most of this, from the original, to get a better
+		// feel for it -- and using it as the base case.
 		//loads the original image, sets max width and max height.
 		int[] sourcePixelsImgA = startView.getPixels();
 		//creates empty image for morphing
@@ -276,37 +277,37 @@ public class Morph extends JPanel {
 		
 		//sliderMorphPosition, used by the program slider, to access the 
 		//current position of index (or x).
-		double sliderMorphPosition = morphPos;
+		double morphingPositionSlider = morphPos;
 		
 		
 		for(int y = 0; y < height; y++) {
 			for(int x = 0; x < width; x++) {
 				//what is happening here - posM? poorly named. Have
 				//to read code to figure out what it means. Renaming shortly.
-				// is basically, our current working pixel.
-				int currentlyIndexedPixel = y * width + x;
+				// is basically, our current index pixel.
+				int currentIndexPixel = y * width + x;
 				
 				// current scaling - reading the code, above, the scaling is different,
 				// but not sure why it's necessarily done. In any event, above, scaling
 				// is set to float values 1.0/.76 and 1.0/.66
-				double xScaled = scalingX * sliderMorphPosition + 1.0 * (1 - sliderMorphPosition);
-				double yScaled = scalingY * sliderMorphPosition + 1.0 * (1 - sliderMorphPosition);
+				double xScaled = scalingX * morphingPositionSlider + 1.0 * (1 - morphingPositionSlider);
+				double yScaled = scalingY * morphingPositionSlider + 1.0 * (1 - morphingPositionSlider);
 				
 				// scaled coordinates in image A
 				int xScaledSource = (int)(x * xScaled);
 				//added (-100 * a) to variable yA so that the red apple appears more aligned with
 				//the green apple.
-				int yScaledSource = (int)((y * yScaled) + (-100 * sliderMorphPosition));
+				int yScaledSource = (int)((y * yScaled) + (-100 * morphingPositionSlider));
 				
 				// sets everything to white
 				int argb = 0xffffffff; 
 				
 				/*
-				 * notes to myself: scaled x, y values.
-				 * if scaled x greater than or equal to 0 AND
-				 * x less than width AND
-				 * and scaled y greater than or equal to 0, AND
-				 * y is less than height.
+				 * notes to myself: scaled x and y source values.
+				 * if scaled x source greater than or equal to 0 AND
+				 * x scaled source is less than width AND
+				 * and scaled y source greater than or equal to 0, AND
+				 * y scaled source is less than height.
 				 */
 				 
 				 
@@ -320,7 +321,7 @@ public class Morph extends JPanel {
 				int blueAttribute = (argb)       & 0xff;
 				
 				
-				morphedPixels[currentlyIndexedPixel] = 0xFF000000 | (redAttribute << 16) | (greenAttribute << 8) | blueAttribute;
+				morphedPixels[currentIndexPixel] = 0xFF000000 | (redAttribute << 16) | (greenAttribute << 8) | blueAttribute;
 			}
 		}
 	}
@@ -337,34 +338,37 @@ void scaleRight() {
 		
 		int width = morphView.getImgWidth();
 		int height = morphView.getImgHeight();
+		
+		//sliderMorphPosition, used by the program slider, to access the 
+		//current position of index (or x).
 		double morphSliderPosition = morphPos;
 	
 		for(int y = 0; y < height; y++) {
 			for(int x = 0; x < width; x++) {
-				int posM = y * width + x;
+				int currentIndexPixel = y * width + x;
 				
-				// current scaling
+				// current scaling position
 				double xScaled = 1/(scalingX * morphSliderPosition + 1.0 * (1 - morphSliderPosition));
 				double yScaled = 1/(scalingY * morphSliderPosition + 1.0 * (1 - morphSliderPosition));
 				
 				// scaled coordinates for image B, arrived to the 125, 75 values
 				//by trial-and-error, until it looked semi-aligned.
-				int xA = (int)((x * xScaled) + (125 * morphSliderPosition));
-				int yA = (int)((y * yScaled) + (75 * morphSliderPosition));
+				int xScaledCoordinatesImageA = (int)((x * xScaled) + (125 * morphSliderPosition));
+				int yScaledCoordinatesImageA = (int)((y * yScaled) + (75 * morphSliderPosition));
 				
 				int argb = 0xffffffff; // white pixel
 				
-				if(xA >= 0 && xA < width && yA >= 0 && yA < height) {
+				if(xScaledCoordinatesImageA >= 0 && xScaledCoordinatesImageA < width && yScaledCoordinatesImageA >= 0 && yScaledCoordinatesImageA < height) {
 					// we are inside image A
-					argb = sourcePixelsImgB[yA * width + xA];
+					argb = sourcePixelsImgB[yScaledCoordinatesImageA * width + xScaledCoordinatesImageA];
 				}
 
-				int rM = (argb >> 16) & 0xff;
-				int gM = (argb >>  8) & 0xff;
-				int bM = (argb)       & 0xff;
+				int redAttribute = (argb >> 16) & 0xff;
+				int greenAttribute = (argb >>  8) & 0xff;
+				int blueAttribute = (argb)       & 0xff;
 				
 				
-				morphedPixels[posM] = 0xFF000000 | (rM << 16) | (gM << 8) | bM;
+				morphedPixels[currentIndexPixel] = 0xFF000000 | (redAttribute << 16) | (greenAttribute << 8) | blueAttribute;
 			}
 		}
 	}
@@ -375,146 +379,151 @@ void scaleRight() {
 		// This implements a simple nearest neighbor scaling.
 		// You may replace it by a bilinear scaling for better visual results
 
-		int[] pixelA = startView.getPixels();
-		int[] pixelM = morphView.getPixels();
+		int[] sourcePixelsImgA = startView.getPixels();
+		int[] morphedPixels = morphView.getPixels();
 
 		int width = morphView.getImgWidth();
 		int height = morphView.getImgHeight();
-		double a = morphPos;
+		
+		//sliderMorphPosition, used by the program slider, to access the 
+		//current position of index (or x).
+		double morphSliderPosition = morphPos;
 
 		for(int y = 0; y < height; y++) {
 			for(int x = 0; x < width; x++) {
-				int posM = y * width + x;
+				
+				int currentPixelIndex = y * width + x;
 
 				// current scaling
-				double xS = scalingX * a + 1.0 * (1 - a);
-				double yS = scalingY * a + 1.0 * (1 - a);
+				double xScaled = scalingX * morphSliderPosition + 1.0 * (1 - morphSliderPosition);
+				double yScaled = scalingY * morphSliderPosition + 1.0 * (1 - morphSliderPosition);
 
-				// scaled coordinates in image A
-				int xA = (int)((x * xS) - (350 * a));
-				int yA = (int)((y * yS) - (100 * a));
+				// scaled coordinates in image A, arriving at 350, 100 coefficients 
+				// via trial and error.
+				int xScaledCoordinateImageA = (int)((x * xScaled) - (350 * morphSliderPosition));
+				int yScaledCoordinateImageA = (int)((y * yScaled) - (100 * morphSliderPosition));
 
-				int argb = 0xffffffff; // white pixel
+				int argb = 0xffffffff; // start with all white pixels
 
-				if(xA >= 0 && xA < width && yA >= 0 && yA < height) {
+				if(xScaledCoordinateImageA >= 0 && xScaledCoordinateImageA < width && yScaledCoordinateImageA >= 0 && yScaledCoordinateImageA < height) {
 					// we are inside image A
-					argb = pixelA[yA * width + xA];
+					argb = sourcePixelsImgA[yScaledCoordinateImageA * width + xScaledCoordinateImageA];
 				}
 
-				int rM = (argb >> 16) & 0xff;
-				int gM = (argb >>  8) & 0xff;
-				int bM = (argb)       & 0xff;
+				int redAttribute = (argb >> 16) & 0xff;
+				int greenAttribute = (argb >>  8) & 0xff;
+				int blueAttribute = (argb)       & 0xff;
 
 
-				pixelM[posM] = 0xFF000000 | (rM << 16) | (gM << 8) | bM;
+				morphedPixels[currentPixelIndex] = 0xFF000000 | (redAttribute << 16) | (greenAttribute << 8) | blueAttribute;
 			}
 		}
 	}
 	
 	void scaleAndMoveRight() {
 		
-		int[] pixelB = endView.getPixels();
-		int[] pixelM = morphView.getPixels();
+		int[] sourcePixelsImgB = endView.getPixels();
+		int[] morphedPixels = morphView.getPixels();
 		
 		int width = morphView.getImgWidth();
 		int height = morphView.getImgHeight();
-		double a = morphPos;
+		double morphSliderPosition = morphPos;
 	
 		for(int y = 0; y < height; y++) {
 			for(int x = 0; x < width; x++) {
-				int posM = y * width + x;
+				int currentPixelIndex = y * width + x;
 				
-				// current scaling
-				double xS = 1/(scalingX * a + 1.0 * (1 - a));
-				double yS = 1/(scalingY * a + 1.0 * (1 - a));
+				// current re-scaling variables
+				double xScaled = 1/(scalingX * morphSliderPosition + 1.0 * (1 - morphSliderPosition));
+				double yScaled = 1/(scalingY * morphSliderPosition + 1.0 * (1 - morphSliderPosition));
 				
 				// scaled coordinates in image B
-				int xA = (int)((x * xS) + (250 * a));
-				int yA = (int)((y * yS) + (70 * a));
+				int xScaledCoordinatesImageA = (int)((x * xScaled) + (250 * morphSliderPosition));
+				int yScaledCoordinatesImageA = (int)((y * yScaled) + (70 * morphSliderPosition));
 				
-				int argb = 0xffffffff; // white pixel
+				int argb = 0xffffffff; // set all to white pixel
 				
-				if(xA >= 0 && xA < width && yA >= 0 && yA < height) {
+				if(xScaledCoordinatesImageA >= 0 && xScaledCoordinatesImageA < width && yScaledCoordinatesImageA >= 0 && yScaledCoordinatesImageA < height) {
 					// we are inside image A
-					argb = pixelB[yA * width + xA];
+					argb = sourcePixelsImgB[yScaledCoordinatesImageA * width + xScaledCoordinatesImageA];
 				}
 
-				int rM = (argb >> 16) & 0xff;
-				int gM = (argb >>  8) & 0xff;
-				int bM = (argb)       & 0xff;
+				int redAttributes = (argb >> 16) & 0xff;
+				int greenAttributes = (argb >>  8) & 0xff;
+				int blueAttributes = (argb)       & 0xff;
 				
 				
-				pixelM[posM] = 0xFF000000 | (rM << 16) | (gM << 8) | bM;
+				morphedPixels[currentPixelIndex] = 0xFF000000 | (redAttributes << 16) | (greenAttributes << 8) | blueAttributes;
 			}
 		}
 	}
 	
 	void morph() {
-		int[] pixelA = startView.getPixels();
-		int[] pixelM = morphView.getPixels();
-		int[] pixelB = endView.getPixels();
+		int[] sourcePixelsImgA = startView.getPixels();
+		int[] morphedPixels = morphView.getPixels();
+		int[] sourcePixelsImgB = endView.getPixels();
 
 		int width = morphView.getImgWidth();
 		int height = morphView.getImgHeight();
-		double a = morphPos;
+		double morphSliderPosition = morphPos;
 		
-		int rA = 0;
-		int gA = 0;
-		int bA = 0;
+		int redAttributesImageA = 0;
+		int greenAttributesImageA = 0;
+		int blueAttributesImageA = 0;
 		
-		int rB = 0;
-		int gB = 0;
-		int bB = 0;
+		int redAttributesImageB = 0;
+		int greenAttributesImageB = 0;
+		int blueAttributesImageB = 0;
 
 		for(int y = 0; y < height; y++) {
 			for(int x = 0; x < width; x++) {
-				int posM = y * width + x;
+				int currentPixelIndex = y * width + x;
 
-				// current scaling
-				double xS = scalingX * a + 1.0 * (1 - a);
-				double yS = scalingY * a + 1.0 * (1 - a);
+				// current re-scaling variables image A
+				double xScaled = scalingX * morphSliderPosition + 1.0 * (1 - morphSliderPosition);
+				double yScaled = scalingY * morphSliderPosition + 1.0 * (1 - morphSliderPosition);
 				
-				// current scaling
-				double xSb = 1/(scalingX * (1 - a) + 1.0 * a);
-				double ySb = 1/(scalingY * (1 - a) + 1.0 * a);
+				// current re-scaling variables image B
+				double xScaledB = 1/(scalingX * (1 - morphSliderPosition) + 1.0 * morphSliderPosition);
+				double yScaledB = 1/(scalingY * (1 - morphSliderPosition) + 1.0 * morphSliderPosition);
 
 				// scaled coordinates in image A
-				int xA = (int)((x * xS) - (350 * a));
-				int yA = (int)((y * yS) - (100 * a));
+				int xScaledCoordinatesImageA = (int)((x * xScaled) - (350 * morphSliderPosition));
+				int yScaledCoordinatesImageA = (int)((y * yScaled) - (100 * morphSliderPosition));
 
-				int argb = 0xffffffff; // white pixel
+				int argb = 0xffffffff; // set all pixels to white
 
-				if(xA >= 0 && xA < width && yA >= 0 && yA < height) {
+				if(xScaledCoordinatesImageA >= 0 && xScaledCoordinatesImageA < width && yScaledCoordinatesImageA >= 0 && yScaledCoordinatesImageA < height) {
 					// we are inside image A
-					argb = pixelA[yA * width + xA];
-					rA = (argb >> 16) & 0xff;
-					gA = (argb >>  8) & 0xff;
-					bA = (argb)       & 0xff;
+					argb = sourcePixelsImgA[yScaledCoordinatesImageA * width + xScaledCoordinatesImageA];
+					redAttributesImageA = (argb >> 16) & 0xff;
+					greenAttributesImageA = (argb >>  8) & 0xff;
+					blueAttributesImageA = (argb)       & 0xff;
 				}else{
-					rA = 255;
-					gA = 255;
-					bA = 255;
+					redAttributesImageA = 255;
+					greenAttributesImageA = 255;
+					blueAttributesImageA = 255;
 				}
 
 				// scaled coordinates in image B
-				int xB = (int)((x * xSb) + (250 * (1 - a)));
-				int yB = (int)((y * ySb) + (80 * (1 - a)));
+				int xScaledCoordinatesImageB = (int)((x * xScaledB) + (250 * (1 - morphSliderPosition)));
+				int yScaledCoordinatesImageB = (int)((y * yScaledB) + (80 * (1 - morphSliderPosition)));
 
 
-				if(xB >= 0 && xB < width && yB >= 0 && yB < height) {
+				if(xScaledCoordinatesImageB >= 0 && xScaledCoordinatesImageB < width && yScaledCoordinatesImageB >= 0 && yScaledCoordinatesImageB < height) {
 					// we are inside image A
-					argb = pixelB[yB * width + xB];
-					rB = (argb >> 16) & 0xff;
-					gB = (argb >>  8) & 0xff;
-					bB = (argb)       & 0xff;
+					argb = sourcePixelsImgB[yScaledCoordinatesImageB * width + xScaledCoordinatesImageB];
+					redAttributesImageB = (argb >> 16) & 0xff;
+					greenAttributesImageB = (argb >>  8) & 0xff;
+					blueAttributesImageB = (argb)       & 0xff;
 				}
 				
 
-				int rM = (int) ((1 - a) * rA + a * rB);
-				int gM = (int) ((1 - a) * gA + a * gB);
-				int bM = (int) ((1 - a) * bA + a * bB);
+				int redAttributes = (int) ((1 - morphSliderPosition) * redAttributesImageA + morphSliderPosition * redAttributesImageB);
+				int greenAttributes = (int) ((1 - morphSliderPosition) * greenAttributesImageA + morphSliderPosition * greenAttributesImageB);
+				int blueAttributes = (int) ((1 - morphSliderPosition) * blueAttributesImageA + morphSliderPosition * blueAttributesImageB);
 				
-				pixelM[posM] = 0xFF000000 | (rM << 16) | (gM << 8) | bM;
+				morphedPixels[currentPixelIndex] = 0xFF000000 | (redAttributes << 16) | (greenAttributes << 8) | blueAttributes;
 			}
 		}
 	}
