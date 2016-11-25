@@ -1,6 +1,9 @@
 // BV Ue04 WS2016/17 Vorgabe
 //
 // Copyright (C) 2015 by Klaus Jung
+// 
+// Herr Prof. Dr. Jung's code was modified by HTW Students
+// Richard Steinmetz and Esteban Licea
 
 import javax.swing.*;
 import javax.swing.border.TitledBorder;
