@@ -34,6 +34,7 @@ public class ImageAnalysis extends JPanel {
 	// TODO: add an array that holds the ARGB-Pixels of the originally loaded image
 	
 	// TODO: add a contrast slider
+	private JSlider contrastSlider;
 	
 	private JLabel statusLine;				// to print some status text
 	
@@ -78,6 +79,7 @@ public class ImageAnalysis extends JPanel {
         		brightnessSlider.setValue(0);
 
         		// TODO: reset contrast slider
+        		contrastSlider.setValue(0);
 
         		processImage();
 	    	}        	
@@ -117,8 +119,19 @@ public class ImageAnalysis extends JPanel {
         });
         
         // TODO: setup contrast slider
+     // brightness slider
+        contrastSlider = new JSlider(-graySteps, graySteps, 0);
+        TitledBorder titBorderContrast = BorderFactory.createTitledBorder("Contrast");
+        titBorderContrast.setTitleColor(Color.GRAY);
+        contrastSlider.setBorder(titBorderContrast);
+        contrastSlider.addChangeListener(new ChangeListener() {
+        	public void stateChanged(ChangeEvent e) {
+        		processImage();
+        	}
+        });
         
         botControls.add(brightnessSlider);
+        botControls.add(contrastSlider);
         statusLine.setAlignmentX(Component.CENTER_ALIGNMENT);
         botControls.add(statusLine);
 
