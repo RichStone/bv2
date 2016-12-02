@@ -55,16 +55,21 @@ public class HistoView extends JPanel {
 			g.clearRect(0, 0, width, height);
 
 			// TODO: draw histogram instead of diagonal lines
+			//debug
+//	    	for(int j = 0; j < 256; j++) {
+//				System.out.println("pixel nr.: " + j + " = " + histogramPixels[j]);
+//			}
 			g.setColor(Color.black);
-			g.drawLine(5, 0, 5, height);
-			g.drawLine(100, 0, 100, height);
+			
+			//TODO get logic of the factor
+			
+			for(int i = 0; i < histogram.length; i++) {
+				g.drawLine(i, 0, i, factor * histogram[i]);
+			}
 		}
 		
 		public Dimension getPreferredSize() {
 			return new Dimension(width, height);
 		}
 	}
-	
-
-
 }

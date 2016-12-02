@@ -211,10 +211,16 @@ public class ImageAnalysis extends JPanel {
     	
 		long startTime = System.currentTimeMillis();
 		
+		histogramPixels = new int[graySteps];
+		
 		// TODO: add your processing code here
     	for(int i = 0; i < argb.length; i++) {
-    		
+    		int px = argb[i] & 0xff;
+    		histogramPixels[px]++;
     	}
+    	
+    	histoView.setHistogram(histogramPixels);
+    	statsView.setHistogram(histogramPixels);
 		
 		imgView.applyChanges();
 		histoView.update();
