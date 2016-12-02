@@ -55,9 +55,9 @@ public class HistoView extends JPanel {
 			g.clearRect(0, 0, width, height);
 
 			// TODO: draw histogram instead of diagonal lines
-			g.setColor(Color.blue);
-			g.drawLine(0, 0, width, height);
-			g.drawLine(width, 0, 0, height);
+			g.setColor(Color.black);
+			g.drawLine(5, 0, 5, height);
+			g.drawLine(100, 0, 100, height);
 		}
 		
 		public Dimension getPreferredSize() {

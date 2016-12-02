@@ -30,8 +30,9 @@ public class ImageAnalysis extends JPanel {
 	private JSlider brightnessSlider;				// brightness Slider
 	
 	// TODO: add an array to hold the histogram of the loaded image
-	
+	int [] histogramPixels;
 	// TODO: add an array that holds the ARGB-Pixels of the originally loaded image
+	int[] argb;
 	
 	// TODO: add a contrast slider
 	private JSlider contrastSlider;
@@ -55,6 +56,7 @@ public class ImageAnalysis extends JPanel {
         // TODO: set the histogram array of histView and statsView
         
         // TODO: initialize the original ARGB-Pixel array from the loaded image
+        argb = imgView.getPixels();
        
 		// load image button
         JButton load = new JButton("Open Image");
@@ -66,7 +68,8 @@ public class ImageAnalysis extends JPanel {
         			imgView.setMaxSize(new Dimension(maxWidth, maxHeight));
         			
         	        // TODO: initialize the original ARGB-Pixel array from the newly loaded image
-        			
+        			argb = imgView.getPixels();
+
         			frame.pack();
 	                processImage();
         		}
@@ -119,7 +122,7 @@ public class ImageAnalysis extends JPanel {
         });
         
         // TODO: setup contrast slider
-     // brightness slider
+        // brightness slider
         contrastSlider = new JSlider(-graySteps, graySteps, 0);
         TitledBorder titBorderContrast = BorderFactory.createTitledBorder("Contrast");
         titBorderContrast.setTitleColor(Color.GRAY);
@@ -209,7 +212,9 @@ public class ImageAnalysis extends JPanel {
 		long startTime = System.currentTimeMillis();
 		
 		// TODO: add your processing code here
-    	
+    	for(int i = 0; i < argb.length; i++) {
+    		
+    	}
 		
 		imgView.applyChanges();
 		histoView.update();
