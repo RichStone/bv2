@@ -31,7 +31,24 @@ public class StatsView extends JPanel {
 		titBorder.setTitleColor(Color.GRAY);
 		setBorder(titBorder);
 		for(int i = 0; i < rows; i++) {
-			infoLabel[i] = new JLabel(names[i]);
+			String name = "";
+			switch(i) {
+			case 1: name = "Minimum";
+				break;
+			case 2: name = "Maximum";
+				break;
+			case 3: name = "Mean";
+				break;
+			case 4: name = "Median";
+				break;
+			case 5: name = "Variance";
+				break;
+			case 6: name = "Entropy";
+				break;
+			default: name = "Name";
+				break;
+			}
+			infoLabel[i] = new JLabel(name);
 			valueLabel[i] = new JLabel("-----");
 			add(infoLabel[i]);
 			add(valueLabel[i]);
