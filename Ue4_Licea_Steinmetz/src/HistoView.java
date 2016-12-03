@@ -11,6 +11,8 @@ import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.border.TitledBorder;
 
+import java.util.stream.*;
+
 
 public class HistoView extends JPanel {
 
@@ -54,18 +56,31 @@ public class HistoView extends JPanel {
 		public void paintComponent(Graphics g) {
 			g.clearRect(0, 0, width, height);
 
-			// TODO: draw histogram instead of diagonal lines
-			//debug
-//	    	for(int j = 0; j < 256; j++) {
-//				System.out.println("pixel nr.: " + j + " = " + histogramPixels[j]);
-//			}
 			g.setColor(Color.black);
 			
-			//TODO get logic of the factor
-			
-			for(int i = 0; i < histogram.length; i++) {
-				g.drawLine(i, 0, i, factor * histogram[i]);
+			//find highest point of histogram
+			double peak = 0; 	
+			for(int i = 0; i < histogram.length; i++){
+				if(histogram[i] > peak){
+					peak = histogram[i];
+				}
 			}
+			
+			int lineHeight = 0;
+			for (int i = 0; i < histogram.length; i++) {
+				lineHeight = (int) (height * histogram[i] / peak);
+				if (lineHeight > 0){
+					g.drawLine(i, height, i, height - lineHeight);					
+				}
+			}
+			
+//			double greyscaleSum = IntStream.of(histogram).sum();
+//			//TODO scale factor 41 must be dynamic for all pictures to show the right result
+//			double factor = 41 * height / greyscaleSum;
+//			
+//			for(int i = 0; i < histogram.length; i++) {
+//				g.drawLine(i, height, i, height - (int)(factor * histogram[i]));
+//			}
 		}
 		
 		public Dimension getPreferredSize() {
