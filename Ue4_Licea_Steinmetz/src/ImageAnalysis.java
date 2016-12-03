@@ -10,6 +10,7 @@ import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.event.*;
 import java.awt.*;
 import java.io.File;
+import java.util.stream.IntStream;
 
 public class ImageAnalysis extends JPanel {
 	
@@ -26,7 +27,7 @@ public class ImageAnalysis extends JPanel {
 	
 	private ImageView imgView;						// image view
 	private HistoView histoView = new HistoView();	// histogram view
-	private StatsView statsView = new StatsView();	// statistics values view
+	private StatsView statsView = new StatsView(imgView.getPixels());	// statistics values view
 	private JSlider brightnessSlider;				// brightness Slider
 	
 	// TODO: add an array to hold the histogram of the loaded image
@@ -221,6 +222,9 @@ public class ImageAnalysis extends JPanel {
     	
     	histoView.setHistogram(histogramPixels);
     	statsView.setHistogram(histogramPixels);
+    	
+    	int allPixels = IntStream.of(histogramPixels).sum();
+    	statsView.setAllPixels(allPixels);
 		
 		imgView.applyChanges();
 		histoView.update();
