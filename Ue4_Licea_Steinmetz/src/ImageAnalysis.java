@@ -215,7 +215,7 @@ public class ImageAnalysis extends JPanel {
 		
 		histogramPixels = new int[graySteps];
 		
-		int [] newImage = imgView.getPixels();
+		int [] newImage = imgView.getPixels().clone();
 
 		int brightnessValue = brightnessSlider.getValue();
 		int contrastValue = contrastSlider.getValue();
