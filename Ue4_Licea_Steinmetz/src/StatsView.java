@@ -94,21 +94,23 @@ public class StatsView extends JPanel {
 		
 		setValue(3, getMedian(pixelSum));
 		setValue(4, getVariance(mean, pixelSum));
-		setValue(5, getEntropy());
+		setValue(5, getEntropy(pixelSum));
 
 		return true;
 	}
 	
-	double getEntropy () 
+	double getEntropy (int pixelSum) 
 	{
 		double entropy = 0.0;
+		double log2 =  Math.log(2.0);
 		
-		if(allPixels != 0) {
 			for ( int i = 0; i < histogram.length; i++) {
 				//possibility to occur
-				double p = histogram[i] / allPixels;
+				if(histogram[i] != 0){
+					double p = (double)histogram[i] / pixelSum;
+					entropy += p * Math.log(1 / p) / log2;
+				}
 			}
-		}
 		return entropy;
 	}
 	
