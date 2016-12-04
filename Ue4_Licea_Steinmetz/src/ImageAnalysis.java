@@ -27,7 +27,7 @@ public class ImageAnalysis extends JPanel {
 	
 	private ImageView imgView;						// image view
 	private HistoView histoView = new HistoView();	// histogram view
-	private StatsView statsView = new StatsView(imgView.getPixels());	// statistics values view
+	private StatsView statsView = new StatsView();	// statistics values view
 	private JSlider brightnessSlider;				// brightness Slider
 	
 	// TODO: add an array to hold the histogram of the loaded image

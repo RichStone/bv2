@@ -33,9 +33,8 @@ public class StatsView extends JPanel {
 	
 	private int allPixels = 0;
 	
-	public StatsView(int[] originalPixels) {
+	public StatsView() {
 		super(new GridLayout(rows, columns, border, border));
-		this.originalPixels = originalPixels;
 		TitledBorder titBorder = BorderFactory.createTitledBorder("Statistics");
 		titBorder.setTitleColor(Color.GRAY);
 		setBorder(titBorder);
@@ -121,24 +120,36 @@ public class StatsView extends JPanel {
 	
 	//TODO fix exceptions and logic for grey image
 	int getMedian() {
-		int median = 0;
+		double pixelSum = 0;
+		double curr = 0;
 		
-		int [] sortedHistogram = Arrays.copyOf(histogram, histogram.length);
-		Arrays.sort(sortedHistogram);
-
-		//TODO doesn't correspond with result on slide
-		median = histogram[(sortedHistogram[256 / 2 - 1] + sortedHistogram[256 / 2]) / 2];
-		return median;
+		for (int i = 0; i < histogram.length; i++) {
+			if (histogram[i] != 0) {
+				pixelSum += histogram[i];
+			}
+		}
+		for (int i = 0; i < histogram.length; i++ ) {
+			if ( histogram [i] != 0 ) {
+				curr += histogram[i];
+			}
+			if(curr > (pixelSum / 2)) {
+				return i;
+			}
+		}
+		return -1;
 	}
 	
 	double getMean() {
 		double mean = 0.0;
+		int allPixels = 0;
 		
 		for (int i = 0; i < histogram.length; i++) {
-			
+			//probability density distribution
+			allPixels += histogram[i];
+			mean += histogram[i] * i;
 		}
 		
-		mean = mean / histogram.length;
+		mean = mean / allPixels;
 		
 		return mean;
 	}
