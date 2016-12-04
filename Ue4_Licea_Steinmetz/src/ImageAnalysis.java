@@ -124,12 +124,13 @@ public class ImageAnalysis extends JPanel {
         
         // TODO: setup contrast slider
         // brightness slider
-        contrastSlider = new JSlider(-graySteps, graySteps, 0);
+        contrastSlider = new JSlider(0, 10, 1);
         TitledBorder titBorderContrast = BorderFactory.createTitledBorder("Contrast");
         titBorderContrast.setTitleColor(Color.GRAY);
         contrastSlider.setBorder(titBorderContrast);
         contrastSlider.addChangeListener(new ChangeListener() {
         	public void stateChanged(ChangeEvent e) {
+        		
         		processImage();
         	}
         });
@@ -214,17 +215,33 @@ public class ImageAnalysis extends JPanel {
 		
 		histogramPixels = new int[graySteps];
 		
+		int [] newImage = imgView.getPixels();
+
+		int brightnessValue = brightnessSlider.getValue();
+		int contrastValue = contrastSlider.getValue();
+
 		// TODO: add your processing code here
     	for(int i = 0; i < argb.length; i++) {
+    		//get pixel
     		int px = argb[i] & 0xff;
+    		
+    		//calculate brightness and contrast
+    		px = (int) (contrastValue * ((brightnessValue + px) - 128) + 128);
+			if(px < 0) {
+				px = 0;
+			}
+			if(px > 255) {
+				px = 255; 
+			}
+    		newImage[i] = 0xff000000 + ((px & 0xff) << 16) + ((px & 0xff) << 8) + (px & 0xff);
+    		
+    		//contribute to histogram statistics
     		histogramPixels[px]++;
     	}
     	
+    	imgView.setPixels(newImage);
     	histoView.setHistogram(histogramPixels);
     	statsView.setHistogram(histogramPixels);
-    	
-    	int allPixels = IntStream.of(histogramPixels).sum();
-    	statsView.setAllPixels(allPixels);
 		
 		imgView.applyChanges();
 		histoView.update();
@@ -234,8 +251,4 @@ public class ImageAnalysis extends JPanel {
 		long time = System.currentTimeMillis() - startTime;
 		statusLine.setText("Processing time = " + time + " ms.");
     }
-    
- 
-
 }
-
