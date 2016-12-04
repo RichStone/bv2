@@ -86,18 +86,23 @@ public class StatsView extends JPanel {
 		}
 		setValue(0, getMin());
 		setValue(1, getMax());
+		
 		double mean = getMean();
 		setValue(2, mean);
-		setValue(3, getMedian());
-		setValue(4, getVariance(mean));
+		
+		int pixelSum = getPixelSum();
+		
+		setValue(3, getMedian(pixelSum));
+		setValue(4, getVariance(mean, pixelSum));
 		setValue(5, getEntropy());
 
 		return true;
 	}
 	
-	double getEntropy () {
+	double getEntropy () 
+	{
 		double entropy = 0.0;
-		System.out.println("entropy all: " + allPixels);
+		
 		if(allPixels != 0) {
 			for ( int i = 0; i < histogram.length; i++) {
 				//possibility to occur
@@ -107,27 +112,22 @@ public class StatsView extends JPanel {
 		return entropy;
 	}
 	
-	double getVariance (double mean) {
+	double getVariance (double mean, int pixelSum) 
+	{
 		double variance = 0;
 		
 		for (int i = 0; i < histogram.length; i++) {
-			variance += Math.pow((histogram[i] - mean), 2);
+			variance += ( Math.pow((i - mean), 2) ) * ( (double)histogram[i] / pixelSum);
 		}
-		variance = variance / histogram.length;
 
 		return variance;
 	}
 	
 	//TODO fix exceptions and logic for grey image
-	int getMedian() {
-		double pixelSum = 0;
+	int getMedian(int pixelSum) 
+	{
 		double curr = 0;
 		
-		for (int i = 0; i < histogram.length; i++) {
-			if (histogram[i] != 0) {
-				pixelSum += histogram[i];
-			}
-		}
 		for (int i = 0; i < histogram.length; i++ ) {
 			if ( histogram [i] != 0 ) {
 				curr += histogram[i];
@@ -139,7 +139,8 @@ public class StatsView extends JPanel {
 		return -1;
 	}
 	
-	double getMean() {
+	double getMean() 
+	{
 		double mean = 0.0;
 		int allPixels = 0;
 		
@@ -154,7 +155,8 @@ public class StatsView extends JPanel {
 		return mean;
 	}
 	
-	int getMin() {
+	int getMin() 
+	{
 		for (int i = 0; i < histogram.length - 1; i++) {
 			if(histogram[i] != 0)
 				return i;
@@ -162,7 +164,8 @@ public class StatsView extends JPanel {
 		return -1;
 	}
 	
-	int getMax() {
+	int getMax() 
+	{
 		for (int i = histogram.length - 1; i > 0; i--) {
 			if(histogram[i] != 0)
 				return i;
@@ -170,13 +173,25 @@ public class StatsView extends JPanel {
 		return -1;
 	}
 	
-	void setAllPixels(int pixels) {
-		allPixels = pixels;
-		update();
-		System.out.println("all: " + allPixels);
+	int getPixelSum() 
+	{
+		int pixelSum = 0;
+		for (int i = 0; i < histogram.length; i++) {
+			if (histogram[i] != 0) {
+				pixelSum += histogram[i];
+			}
+		}
+		return pixelSum;
 	}
 	
-	void setHistogramPixels(int[] pixels) {
+	void setAllPixels(int pixels) 
+	{
+		allPixels = pixels;
+		update();
+	}
+	
+	void setHistogramPixels(int[] pixels) 
+	{
 		this.originalPixels = pixels;
 	}
 }
