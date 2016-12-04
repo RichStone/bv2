@@ -73,14 +73,6 @@ public class HistoView extends JPanel {
 					g.drawLine(i, height, i, height - lineHeight);					
 				}
 			}
-			
-//			double greyscaleSum = IntStream.of(histogram).sum();
-//			//TODO scale factor 41 must be dynamic for all pictures to show the right result
-//			double factor = 41 * height / greyscaleSum;
-//			
-//			for(int i = 0; i < histogram.length; i++) {
-//				g.drawLine(i, height, i, height - (int)(factor * histogram[i]));
-//			}
 		}
 		
 		public Dimension getPreferredSize() {
