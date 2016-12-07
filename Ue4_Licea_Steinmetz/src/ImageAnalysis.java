@@ -33,7 +33,7 @@ public class ImageAnalysis extends JPanel {
 	// TODO: add an array to hold the histogram of the loaded image
 	int [] histogramPixels;
 	// TODO: add an array that holds the ARGB-Pixels of the originally loaded image
-	int[] argb;
+	int[] origPix;
 	
 	// TODO: add a contrast slider
 	private JSlider contrastSlider;
@@ -57,7 +57,7 @@ public class ImageAnalysis extends JPanel {
         // TODO: set the histogram array of histView and statsView
         
         // TODO: initialize the original ARGB-Pixel array from the loaded image
-        argb = imgView.getPixels();
+        origPix = imgView.getPixels().clone();
        
 		// load image button
         JButton load = new JButton("Open Image");
@@ -69,7 +69,7 @@ public class ImageAnalysis extends JPanel {
         			imgView.setMaxSize(new Dimension(maxWidth, maxHeight));
         			
         	        // TODO: initialize the original ARGB-Pixel array from the newly loaded image
-        			argb = imgView.getPixels();
+        			origPix = imgView.getPixels();
 
         			frame.pack();
 	                processImage();
@@ -83,8 +83,8 @@ public class ImageAnalysis extends JPanel {
         		brightnessSlider.setValue(0);
 
         		// TODO: reset contrast slider
-        		contrastSlider.setValue(0);
-
+        		contrastSlider.setValue(10);
+        		
         		processImage();
 	    	}        	
 	    });
@@ -124,7 +124,7 @@ public class ImageAnalysis extends JPanel {
         
         // TODO: setup contrast slider
         // brightness slider
-        contrastSlider = new JSlider(0, 10, 1);
+        contrastSlider = new JSlider(0, 100, 10);
         TitledBorder titBorderContrast = BorderFactory.createTitledBorder("Contrast");
         titBorderContrast.setTitleColor(Color.GRAY);
         contrastSlider.setBorder(titBorderContrast);
@@ -215,28 +215,31 @@ public class ImageAnalysis extends JPanel {
 		
 		histogramPixels = new int[graySteps];
 		
-		int [] newImage = imgView.getPixels().clone();
+		int [] newImage = imgView.getPixels();
 
 		int brightnessValue = brightnessSlider.getValue();
-		int contrastValue = contrastSlider.getValue();
+		double contrastValue = contrastSlider.getValue() / 10;
+		if(contrastSlider.getValue()!=10) 
+			contrastValue = contrastSlider.getValue() / 10.0;
 
 		// TODO: add your processing code here
-    	for(int i = 0; i < argb.length; i++) {
+    	for(int i = 0; i < origPix.length; i++) {
     		//get pixel
-    		int px = argb[i] & 0xff;
+    		int oldPx = origPix[i] & 0xff;
     		
     		//calculate brightness and contrast
-    		px = (int) (contrastValue * ((brightnessValue + px) - 128) + 128);
-			if(px < 0) {
-				px = 0;
+    		int newPx = (int) (((oldPx + brightnessValue) - 128) * contrastValue + 128);
+    		//over-/underflow handling
+			if(newPx < 0) {
+				newPx = 0;
 			}
-			if(px > 255) {
-				px = 255; 
+			if(newPx > 255) {
+				newPx = 255; 
 			}
-    		newImage[i] = 0xff000000 + ((px & 0xff) << 16) + ((px & 0xff) << 8) + (px & 0xff);
+    		newImage[i] = (0xFF << 24) | (newPx << 16) | (newPx << 8) | newPx;
     		
     		//contribute to histogram statistics
-    		histogramPixels[px]++;
+    		histogramPixels[newPx]++;
     	}
     	
     	imgView.setPixels(newImage);

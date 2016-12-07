@@ -159,20 +159,24 @@ public class StatsView extends JPanel {
 	
 	int getMin() 
 	{
-		for (int i = 0; i < histogram.length - 1; i++) {
-			if(histogram[i] != 0)
-				return i;
+		int min = 0;
+		for (int i = histogram.length - 1; i >= 0; i--) {
+			if(histogram[i] > 0)
+				min = i;
 		}
-		return -1;
+
+		return min;
 	}
 	
 	int getMax() 
 	{
-		for (int i = histogram.length - 1; i > 0; i--) {
-			if(histogram[i] != 0)
-				return i;
+		int max = 0;
+		
+		for (int i = 0; i < histogram.length; i++) {
+			if(histogram[i] > 0)
+				max = i;
 		}
-		return -1;
+		return max;
 	}
 	
 	int getPixelSum() 
