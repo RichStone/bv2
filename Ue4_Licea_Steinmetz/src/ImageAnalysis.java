@@ -15,7 +15,7 @@ import java.util.stream.IntStream;
 public class ImageAnalysis extends JPanel {
 	
 	private static final long serialVersionUID = 1L;
-	private static final String author = "<Your Name>";		// TODO: type in your name here
+	private static final String author = "Starsky and Hutch";		// TODO: type in your name here
 	private static final String initialFilename = "mountains.png";
 	private static final File openPath = new File(".");
 	private static final int border = 10;
@@ -88,6 +88,58 @@ public class ImageAnalysis extends JPanel {
         		processImage();
 	    	}        	
 	    });
+        
+        JButton autoContrast = new JButton("Auto Contrast");
+        autoContrast.addActionListener(new ActionListener() {
+        	public void actionPerformed(ActionEvent e) {
+        		
+        		int [] newImage = imgView.getPixels();
+        		
+        		/*
+        		 * basic formula for auto contrasting. Linear operation.
+        		 * f_autoContrast(a) = a_min + (a - a_low)*((a_max - a_min)/(a_hi-a_low))
+        		 */
+        		
+        		int image_low, image_high, absolute_min, absolute_max;
+        		
+      
+        		image_low = statsView.getMin();
+        		image_high = statsView.getMax();
+        		absolute_max = 255;
+        		absolute_min = 0;
+        		
+        		for(int i = 0; i < origPix.length; i++) {
+            		//get pixel
+            		int oldPx = origPix[i] & 0xff;
+            		
+            		/*
+            		 * basic formula for auto contrasting. Linear operation.
+            		 * f_autoContrast(a) = a_min + (a - a_low)*((a_max - a_min)/(a_hi-a_low))
+            		 */
+            		int newPx = (int) (absolute_min + (oldPx - image_low) * ((absolute_max - absolute_min)/(image_high - image_low)));
+            		//over-/underflow handling
+        			if(newPx < 0) {
+        				newPx = 0;
+        			}
+        			if(newPx > 255) {
+        				newPx = 255; 
+        			}
+            		newImage[i] = (0xFF << 24) | (newPx << 16) | (newPx << 8) | newPx;
+            		
+            		//contribute to histogram statistics
+            		histogramPixels[newPx]++;
+            	}
+        	
+        		imgView.setPixels(newImage);
+        		histoView.setHistogram(histogramPixels);
+            	statsView.setHistogram(histogramPixels);
+        		
+        		histoView.update();
+        		statsView.update();
+        		imgView.applyChanges();
+        	}      	
+	    });
+        
          
         
         // some status text
@@ -97,6 +149,7 @@ public class ImageAnalysis extends JPanel {
         JPanel topControls = new JPanel(new GridBagLayout());
         topControls.add(load);
         topControls.add(reset);
+        topControls.add(autoContrast);
         
         // center view
         JPanel centerControls = new JPanel();
