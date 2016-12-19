@@ -1,9 +1,6 @@
 // BV Ue04 WS2016/17 Vorgabe
 //
 // Copyright (C) 2015 by Klaus Jung
-// 
-// Herr Prof. Dr. Jung's code was modified by HTW Students
-// Richard Steinmetz and Esteban Licea
 
 import javax.swing.*;
 import javax.swing.border.TitledBorder;
@@ -13,11 +10,12 @@ import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.event.*;
 import java.awt.*;
 import java.io.File;
+import java.util.stream.IntStream;
 
 public class ImageAnalysis extends JPanel {
 	
 	private static final long serialVersionUID = 1L;
-	private static final String author = "Esteban Licea & Richard Steinmetz";		// TODO: type in your name here
+	private static final String author = "Starsky and Hutch";		// TODO: type in your name here
 	private static final String initialFilename = "mountains.png";
 	private static final File openPath = new File(".");
 	private static final int border = 10;
@@ -32,11 +30,16 @@ public class ImageAnalysis extends JPanel {
 	private StatsView statsView = new StatsView();	// statistics values view
 	private JSlider brightnessSlider;				// brightness Slider
 	
-	// TODO: add an array to hold the histogram of the loaded image
 	
+	
+	
+	// TODO: add an array to hold the histogram of the loaded image
+	int [] histogramPixels;
 	// TODO: add an array that holds the ARGB-Pixels of the originally loaded image
+	int[] origPix;
 	
 	// TODO: add a contrast slider
+	private JSlider contrastSlider;
 	
 	private JLabel statusLine;				// to print some status text
 	
@@ -57,6 +60,7 @@ public class ImageAnalysis extends JPanel {
         // TODO: set the histogram array of histView and statsView
         
         // TODO: initialize the original ARGB-Pixel array from the loaded image
+        origPix = imgView.getPixels().clone();
        
 		// load image button
         JButton load = new JButton("Open Image");
@@ -68,7 +72,8 @@ public class ImageAnalysis extends JPanel {
         			imgView.setMaxSize(new Dimension(maxWidth, maxHeight));
         			
         	        // TODO: initialize the original ARGB-Pixel array from the newly loaded image
-        			
+        			origPix = imgView.getPixels();
+
         			frame.pack();
 	                processImage();
         		}
@@ -81,10 +86,68 @@ public class ImageAnalysis extends JPanel {
         		brightnessSlider.setValue(0);
 
         		// TODO: reset contrast slider
-
+        		contrastSlider.setValue(10);
+        		
         		processImage();
 	    	}        	
 	    });
+        
+        JButton autoContrast = new JButton("Auto Contrast");
+        autoContrast.addActionListener(new ActionListener() {
+        	public void actionPerformed(ActionEvent e) {
+        		
+        		int [] newImage = imgView.getPixels();
+        		
+        		/*
+        		 * basic formula for auto contrasting. Linear operation.
+        		 * f_autoContrast(a) = a_min + (a - a_low)*((a_max - a_min)/(a_hi-a_low))
+        		 */
+        		
+        		int image_low, image_high, absolute_min, absolute_max;
+ 
+        		
+        		image_low = statsView.getMinimumMinusOnePercent();
+        		
+        		image_high = statsView.getMaximumMinusOnePercent();
+        		
+        		absolute_max = 255;
+        		
+        		absolute_min = 0;
+        		
+        		for(int i = 0; i < origPix.length; i++) {
+            		//get pixel
+            		int oldPx = origPix[i] & 0xff;
+            		
+            		/*
+            		 * general basic formula for auto contrasting. Linear operation.
+            		 * f_autoContrast(a) = a_min + (a - a_low)*((a_max - a_min)/(a_hi-a_low))
+            		 */
+            		int newPx = (int) (absolute_min + (oldPx - image_low) * ((absolute_max - absolute_min)/(image_high - image_low)));
+            		
+            		//over-/underflow handling
+        			if(newPx < 0) {
+        				newPx = 0;
+        			}
+        			if(newPx > 255) {
+        				newPx = 255; 
+        			}
+            		newImage[i] = (0xFF << 24) | (newPx << 16) | (newPx << 8) | newPx;
+            		
+            		//contribute to histogram statistics
+            		histogramPixels[newPx]++;
+            	}
+        		
+        		
+        		imgView.setPixels(newImage);
+        		histoView.setHistogram(histogramPixels);
+            	statsView.setHistogram(histogramPixels);
+        		
+        		histoView.update();
+        		statsView.update();
+        		imgView.applyChanges();
+        	}      	
+	    });
+        
          
         
         // some status text
@@ -94,6 +157,7 @@ public class ImageAnalysis extends JPanel {
         JPanel topControls = new JPanel(new GridBagLayout());
         topControls.add(load);
         topControls.add(reset);
+        topControls.add(autoContrast);
         
         // center view
         JPanel centerControls = new JPanel();
@@ -110,18 +174,37 @@ public class ImageAnalysis extends JPanel {
         
         // brightness slider
         brightnessSlider = new JSlider(-graySteps, graySteps, 0);
-		TitledBorder titBorder = BorderFactory.createTitledBorder("Brightness");
+        
+		TitledBorder titBorder = BorderFactory.createTitledBorder("Brightness: 0");
 		titBorder.setTitleColor(Color.GRAY);
         brightnessSlider.setBorder(titBorder);
         brightnessSlider.addChangeListener(new ChangeListener() {
         	public void stateChanged(ChangeEvent e) {
-        		processImage();				
+        		
+        		processImage();
+        		int adjustedBrightnessValue = brightnessSlider.getValue();
+        		titBorder.setTitle("Brightness: " + adjustedBrightnessValue);
+        		
         	}        	
         });
         
         // TODO: setup contrast slider
         
+        contrastSlider = new JSlider(0, 100, 10);
+        TitledBorder titBorderContrast = BorderFactory.createTitledBorder("Contrast: 10");
+        titBorderContrast.setTitleColor(Color.GRAY);
+        contrastSlider.setBorder(titBorderContrast);
+        contrastSlider.addChangeListener(new ChangeListener() {
+        	public void stateChanged(ChangeEvent e) {
+        		
+        		processImage();
+        		int adjustedContrastValue = contrastSlider.getValue();
+        		titBorderContrast.setTitle("Contrast: " + adjustedContrastValue);
+        	}
+        });
+        
         botControls.add(brightnessSlider);
+        botControls.add(contrastSlider);
         statusLine.setAlignmentX(Component.CENTER_ALIGNMENT);
         botControls.add(statusLine);
 
@@ -198,8 +281,42 @@ public class ImageAnalysis extends JPanel {
     	
 		long startTime = System.currentTimeMillis();
 		
+		histogramPixels = new int[graySteps];
+		
+		int [] newImage = imgView.getPixels();
+
+		int brightnessValue = brightnessSlider.getValue();
+		//System.out.println("Brightness: " + brightnessValue);
+		double contrastValue = (double) contrastSlider.getValue() / 10;
+		
+		
+		if(contrastSlider.getValue()!=10) 
+			contrastValue = contrastSlider.getValue() / 10.0;
+			//System.out.println("Contrast: " + contrastValue/10);
+
 		// TODO: add your processing code here
+    	for(int i = 0; i < origPix.length; i++) {
+    		//get pixel
+    		int oldPx = origPix[i] & 0xff;
+    		
+    		//calculate brightness and contrast
+    		int newPx = (int) (((oldPx + brightnessValue) - 128) * contrastValue + 128);
+    		//over-/underflow handling
+			if(newPx < 0) {
+				newPx = 0;
+			}
+			if(newPx > 255) {
+				newPx = 255; 
+			}
+    		newImage[i] = (0xFF << 24) | (newPx << 16) | (newPx << 8) | newPx;
+    		
+    		//contribute to histogram statistics
+    		histogramPixels[newPx]++;
+    	}
     	
+    	imgView.setPixels(newImage);
+    	histoView.setHistogram(histogramPixels);
+    	statsView.setHistogram(histogramPixels);
 		
 		imgView.applyChanges();
 		histoView.update();
@@ -208,9 +325,7 @@ public class ImageAnalysis extends JPanel {
 		// show processing time
 		long time = System.currentTimeMillis() - startTime;
 		statusLine.setText("Processing time = " + time + " ms.");
+		
+		
     }
-    
- 
-
 }
-
