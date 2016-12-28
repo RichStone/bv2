@@ -29,6 +29,7 @@ public class ImageAnalysis extends JPanel {
 	private HistoView histoView = new HistoView();	// histogram view
 	private StatsView statsView = new StatsView();	// statistics values view
 	private JSlider brightnessSlider;				// brightness Slider
+	private JSlider quantizeSlider;	
 	
 	// TODO: add an array to hold the histogram of the loaded image
 	int [] histogramPixels;
@@ -183,13 +184,23 @@ public class ImageAnalysis extends JPanel {
         contrastSlider.setBorder(titBorderContrast);
         contrastSlider.addChangeListener(new ChangeListener() {
         	public void stateChanged(ChangeEvent e) {
-        		
+        		processImage();
+        	}
+        });
+        
+        quantizeSlider = new JSlider(10, 200, 10);
+        TitledBorder quantizeLabel = BorderFactory.createTitledBorder("Quantize");
+        quantizeLabel.setTitleColor(Color.GRAY);
+        quantizeSlider.setBorder(quantizeLabel);
+        quantizeSlider.addChangeListener(new ChangeListener() {
+        	public void stateChanged(ChangeEvent e) {
         		processImage();
         	}
         });
         
         botControls.add(brightnessSlider);
         botControls.add(contrastSlider);
+        botControls.add(quantizeSlider);
         statusLine.setAlignmentX(Component.CENTER_ALIGNMENT);
         botControls.add(statusLine);
 
@@ -273,7 +284,9 @@ public class ImageAnalysis extends JPanel {
 		int brightnessValue = brightnessSlider.getValue();
 		double contrastValue = contrastSlider.getValue() / 10;
 		if(contrastSlider.getValue()!=10) 
-			contrastValue = contrastSlider.getValue() / 10.0;
+			contrastValue = contrastSlider.getValue();
+
+		double delta = quantizeSlider.getValue() / 10.0;
 
 		// TODO: add your processing code here
     	for(int i = 0; i < origPix.length; i++) {
@@ -282,6 +295,11 @@ public class ImageAnalysis extends JPanel {
     		
     		//calculate brightness and contrast
     		int newPx = (int) (((oldPx + brightnessValue) - 128) * contrastValue + 128);
+    		
+    		//quantize
+    		int q = (int) Math.round((newPx / delta));
+    		newPx = (int) Math.round(q * delta);
+    				
     		//over-/underflow handling
 			if(newPx < 0) {
 				newPx = 0;
@@ -294,7 +312,9 @@ public class ImageAnalysis extends JPanel {
     		//contribute to histogram statistics
     		histogramPixels[newPx]++;
     	}
-    	
+    	System.out.println("brightness: " + brightnessValue);
+    	System.out.println("contrast: " + contrastValue);
+    	System.out.println("delta: " + (delta));
     	imgView.setPixels(newImage);
     	histoView.setHistogram(histogramPixels);
     	statsView.setHistogram(histogramPixels);
