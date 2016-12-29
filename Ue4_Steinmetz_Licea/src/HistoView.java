@@ -72,7 +72,7 @@ public class HistoView extends JPanel {
 				if (lineHeight > 0){
 					g.drawLine(i, height, i, height - lineHeight);					
 				}
-			}
+}
 		}
 		
 		public Dimension getPreferredSize() {

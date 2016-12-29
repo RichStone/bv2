@@ -208,7 +208,7 @@ public class StatsView extends JPanel {
 		int pixelSum = getPixelSum();
 		
 		//calculates the number of pixels to determine 1% cutoff
-		int onePercentCutoff = (int) (pixelSum * 0.01);
+		int onePercentCutoff = (int) Math.round (pixelSum * 0.01);
 		
 		//adds up values within index until we reach 1% threshold
 		int runningSumWithinIndex = 0;
@@ -246,14 +246,13 @@ public class StatsView extends JPanel {
 		int pixelSum = getPixelSum();
 		
 		//calculates the number of pixels to determine 99% cutoff
-		int nintyNinePercentCutoff = (int) (pixelSum * 0.99);
+		int nintyNinePercentCutoff = (int) Math.round (pixelSum * 0.99);
 		
 		//subtracts values within index until we reach 99% threshold
-		int runningSumWithinIndex = pixelSum;
+		//int runningSumWithinIndex = pixelSum;
 		
-		for (int i = histogram.length - 1; nintyNinePercentCutoff < runningSumWithinIndex; i--) {
-			runningSumWithinIndex -= histogram[i];
-			System.out.println("runningHighSum: " + runningSumWithinIndex);
+		for (int i = histogram.length - 1; nintyNinePercentCutoff < pixelSum; i--) {
+			pixelSum -= histogram[i];
 			highIndex = i;
 		}
 		return highIndex;

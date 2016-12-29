@@ -96,55 +96,67 @@ public class ImageAnalysis extends JPanel {
         autoContrast.addActionListener(new ActionListener() {
         	public void actionPerformed(ActionEvent e) {
         		
-        		int [] newImage = imgView.getPixels();
+        		//int [] newImage = imgView.getPixels();
         		
         		/*
         		 * basic formula for auto contrasting. Linear operation.
         		 * f_autoContrast(a) = a_min + (a - a_low)*((a_max - a_min)/(a_hi-a_low))
         		 */
         		
-        		int image_low, image_high, absolute_min, absolute_max;
+        		int image_low, image_high, h, c;
  
         		
-        		image_low = statsView.getMinimumMinusOnePercent();
+        		image_low = (int) Math.round (statsView.getMinimumMinusOnePercent());
+        		//System.out.println("Value just above 1% is " + image_low);
         		
-        		image_high = statsView.getMaximumMinusOnePercent();
+        		image_high = (int) Math.round (statsView.getMaximumMinusOnePercent());
+        		//System.out.println("Value just below 99% is " + image_high);
+    
+        		h = (int) Math.round( (double) (128 - ( (image_low + image_high) / 2) ));
+        		c = (int) Math.round(10.0 * (255.0 / (image_high - image_low)));
+
+        		brightnessSlider.setValue(h);
+        		contrastSlider.setValue(c);
         		
-        		absolute_max = 255;
+//        		for(int i = 0; i < origPix.length; i++) {
+//            		//get pixel
+//            		int oldPx = origPix[i] & 0xff;
+//            		
+//            		/*
+//            		 * basic formula for auto contrasting. Linear operation.
+//            		 * f_autoContrast(a) = a_min + (a - a_low)*((a_max - a_min)/(a_hi-a_low))
+//            		 * modified formula since a_min = 0, and irrelevant, and just made a_max = 255.
+//            		 */
+//            		int newPx = (int) ((oldPx - image_low) * ((255)/(image_high - image_low)));
+//            		
+//            		//over-/underflow handling
+//        			if(newPx < 0) {
+//        				newPx = 0;
+//        			}
+//        			if(newPx > 255) {
+//        				newPx = 255; 
+//        			}
+//            		newImage[i] = (0xFF << 24) | (newPx << 16) | (newPx << 8) | newPx;
+//            		
+//            		//contribute to histogram statistics
+//            		histogramPixels[newPx]++;
+//            	}
         		
-        		absolute_min = 0;
+        		//int autoContrastedBrightnessValue = (int) Math.round((double) (128 - ((image_low + image_high)/2)));
+        		//brightnessSlider.setValue(autoContrastedBrightnessValue);
         		
-        		for(int i = 0; i < origPix.length; i++) {
-            		//get pixel
-            		int oldPx = origPix[i] & 0xff;
-            		
-            		/*
-            		 * general basic formula for auto contrasting. Linear operation.
-            		 * f_autoContrast(a) = a_min + (a - a_low)*((a_max - a_min)/(a_hi-a_low))
-            		 */
-            		int newPx = (int) (absolute_min + (oldPx - image_low) * ((absolute_max - absolute_min)/(image_high - image_low)));
-            		
-            		//over-/underflow handling
-        			if(newPx < 0) {
-        				newPx = 0;
-        			}
-        			if(newPx > 255) {
-        				newPx = 255; 
-        			}
-            		newImage[i] = (0xFF << 24) | (newPx << 16) | (newPx << 8) | newPx;
-            		
-            		//contribute to histogram statistics
-            		histogramPixels[newPx]++;
-            	}
-        		
-        		
-        		imgView.setPixels(newImage);
-        		histoView.setHistogram(histogramPixels);
-            	statsView.setHistogram(histogramPixels);
-        		
-        		histoView.update();
-        		statsView.update();
-        		imgView.applyChanges();
+        		//int autoContrastedNewContrastSliderValue = (int) Math.round(1000.0 * (255.0 / (image_high - image_low)));
+        		//contrastSlider.setValue();
+//        		
+//    			imgView.setPixels(newImage);
+//    			histoView.setHistogram(histogramPixels);
+//    			statsView.setHistogram(histogramPixels);
+//        			
+//        		
+//        		histoView.update();
+//        		statsView.update();
+//        		imgView.applyChanges();
+        		processImage();
         	}      	
 	    });
         
@@ -286,12 +298,13 @@ public class ImageAnalysis extends JPanel {
 		int [] newImage = imgView.getPixels();
 
 		int brightnessValue = brightnessSlider.getValue();
-		//System.out.println("Brightness: " + brightnessValue);
-		double contrastValue = (double) contrastSlider.getValue() / 10;
-		
-		
-		if(contrastSlider.getValue()!=10) 
-			contrastValue = contrastSlider.getValue() / 10.0;
+//		//System.out.println("Brightness: " + brightnessValue);
+//		
+		double contrastValue = (double) contrastSlider.getValue()/10.0;
+//		
+//		
+//		if(contrastSlider.getValue()!=10) 
+//			contrastValue = contrastSlider.getValue() / 10.0;
 			//System.out.println("Contrast: " + contrastValue/10);
 
 		// TODO: add your processing code here
@@ -318,13 +331,14 @@ public class ImageAnalysis extends JPanel {
     	histoView.setHistogram(histogramPixels);
     	statsView.setHistogram(histogramPixels);
 		
-		imgView.applyChanges();
-		histoView.update();
-		statsView.update();
-		
-		// show processing time
-		long time = System.currentTimeMillis() - startTime;
-		statusLine.setText("Processing time = " + time + " ms.");
+	imgView.applyChanges();
+	histoView.update();
+	statsView.update();
+
+	
+	// show processing time
+	long time = System.currentTimeMillis() - startTime;
+	statusLine.setText("Processing time = " + time + " ms.");
 		
 		
     }
