@@ -200,4 +200,13 @@ public class StatsView extends JPanel {
 	{
 		this.originalPixels = pixels;
 	}
+	
+	public int getAllPixels() 
+	{
+		for (int i = 0; i < histogram.length; i++) {
+			//probability density distribution
+			allPixels += histogram[i];
+		}
+		return allPixels;
+	}
 }

@@ -284,7 +284,7 @@ public class ImageAnalysis extends JPanel {
 		int brightnessValue = brightnessSlider.getValue();
 		double contrastValue = contrastSlider.getValue() / 10;
 		if(contrastSlider.getValue()!=10) 
-			contrastValue = contrastSlider.getValue();
+			contrastValue = contrastSlider.getValue() / 10.0;
 
 		double delta = quantizeSlider.getValue() / 10.0;
 
