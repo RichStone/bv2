@@ -11,6 +11,7 @@ import java.io.File;
 import java.util.Arrays;
 
 import javax.swing.BorderFactory;
+import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JFileChooser;
@@ -76,7 +77,21 @@ public class DPCM extends JPanel
 		//drop down label
 		JLabel predictorLabel = new JLabel("Prädikator: ");
 		
+		//create open image btn
+		JButton load = new JButton("Bild öffnen");
+		load.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				File input = openFile();
+				if(input != null) {
+					startView.loadImage(input);
+					startView.setMaxSize(new Dimension(maxWidth, maxHeight));
+					calculate();
+				}
+			}
+		});
+		
 		//show created elements
+		controls.add(load, c);
 		controls.add(predictorLabel, c);
 		controls.add(method, c);
 		
@@ -146,6 +161,21 @@ public class DPCM extends JPanel
         chooser.setFileFilter(filter);
         chooser.setCurrentDirectory(openPath);
         int ret = chooser.showDialog(this, title);
+        if(ret == JFileChooser.APPROVE_OPTION) return chooser.getSelectedFile();
+        return null;		
+	}
+	
+	/**
+	 * Open file dialog used to select a new image.
+	 * @return The selected file object or null on cancel.
+	 */
+	private File openFile() {
+		// file open dialog
+        JFileChooser chooser = new JFileChooser();
+        FileNameExtensionFilter filter = new FileNameExtensionFilter("Images (*.jpg, *.png, *.gif)", "jpg", "png", "gif");
+        chooser.setFileFilter(filter);
+        chooser.setCurrentDirectory(openPath);
+        int ret = chooser.showOpenDialog(this);
         if(ret == JFileChooser.APPROVE_OPTION) return chooser.getSelectedFile();
         return null;		
 	}
