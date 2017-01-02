@@ -1,4 +1,5 @@
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -18,6 +19,7 @@ import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.border.TitledBorder;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.filechooser.FileNameExtensionFilter;
@@ -53,10 +55,21 @@ public class DPCM extends JPanel
 		//initialize the image sockets
 		startView = new ImageView(input1);
 		startView.setMaxSize(new Dimension(maxWidth, maxHeight));
+		TitledBorder startViewBorder = BorderFactory.createTitledBorder("Eingabebild");
+		startViewBorder.setTitleColor(Color.BLACK);
+		startView.setBorder(startViewBorder);
+		
 		predictionView = new ImageView(startView.getImgWidth(), startView.getImgWidth());
 		predictionView.setMaxSize(new Dimension(maxWidth, maxHeight));
+		TitledBorder predictionViewBorder = BorderFactory.createTitledBorder("Prädiktionsfehlerbild");
+		predictionViewBorder.setTitleColor(Color.GRAY);
+		predictionView.setBorder(predictionViewBorder);
+		
 		reconstructedView = new ImageView(startView.getImgWidth(), startView.getImgWidth());
 		reconstructedView.setMaxSize(new Dimension(maxWidth, maxHeight));
+		TitledBorder reconstructedViewBorder = BorderFactory.createTitledBorder("Rekonstruiertes Bild");
+		reconstructedViewBorder.setTitleColor(Color.BLACK);
+		reconstructedView.setBorder(reconstructedViewBorder);
 		
 		//control panel
 		JPanel controls = new JPanel(new GridBagLayout());
