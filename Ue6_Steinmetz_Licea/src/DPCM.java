@@ -39,7 +39,9 @@ public class DPCM extends JPanel
 	private JLabel statusLine;
 	private JComboBox<String> method;
 	
-	private double entropy = 0;
+	private double entropyStart;
+	private double entropyPredictor;
+	private double entropyReconstructed;
 	
 	public DPCM() 
 	{
@@ -59,6 +61,7 @@ public class DPCM extends JPanel
 		TitledBorder startViewBorder = BorderFactory.createTitledBorder("Eingabebild");
 		startViewBorder.setTitleColor(Color.BLACK);
 		startView.setBorder(startViewBorder);
+		//convert to gray scale
 		startView.setPixels(convertToGrayscale(startView));
 		
 		predictionView = new ImageView(startView.getImgWidth(), startView.getImgWidth());
@@ -90,7 +93,7 @@ public class DPCM extends JPanel
 		});
 		
 		//drop down label
-		JLabel predictorLabel = new JLabel("Prädikator: ");
+		JLabel predictorLabel = new JLabel("Prädiktor: ");
 		
 		//create open image btn
 		JButton load = new JButton("Bild öffnen");
@@ -116,12 +119,14 @@ public class DPCM extends JPanel
 		images.add(predictionView);
 		images.add(reconstructedView);
 		
+		getEntropy(startView);
+		
 		//entropy displaying
-		JLabel entropyLabel = new JLabel("Entropie: " + entropy);
-		JLabel entropyPredictionLabel = new JLabel("Entropie: " + 1);
-		JLabel entropyReconstructedLabel = new JLabel("Entropie: " + 2);
+		JLabel entropyStartLabel = new JLabel("Entropie: " + getEntropy(startView));
+		JLabel entropyPredictionLabel = new JLabel("Entropie: " + getEntropy(predictionView));
+		JLabel entropyReconstructedLabel = new JLabel("Entropie: " + getEntropy(reconstructedView));
 		JPanel entropyDisplay = new JPanel(new GridLayout(1, 3));
-		entropyDisplay.add(entropyLabel);
+		entropyDisplay.add(entropyStartLabel);
 		entropyDisplay.add(entropyPredictionLabel);
 		entropyDisplay.add(entropyReconstructedLabel);
 		
@@ -164,6 +169,11 @@ public class DPCM extends JPanel
 		}
 	}
 	
+	/**
+	 * 
+	 * @param img convert this img to gray scale
+	 * @return the new array with the gray values
+	 */
 	private static int[] convertToGrayscale(ImageView img) {
 		int [] pixels = img.getPixels();
 		for(int i = 0; i < pixels.length; i++) {
@@ -218,5 +228,57 @@ public class DPCM extends JPanel
         int ret = chooser.showOpenDialog(this);
         if(ret == JFileChooser.APPROVE_OPTION) return chooser.getSelectedFile();
         return null;		
+	}
+	
+	static double getEntropy (ImageView img) 
+	{
+		int [] histogram = getHistogram(img);
+		int pixelSum = getPixelSum(histogram);
+		double entropy = 0.0;
+		double log2 =  Math.log(2.0);
+		
+		for ( int i = 0; i < histogram.length; i++) {
+			//possibility to occur
+			if(histogram[i] != 0){
+				double p = (double)histogram[i] / pixelSum;
+				entropy += p * Math.log(1 / p) / log2;
+			}
+		}
+		//reduce fraction
+		entropy = Math.round(entropy * 1000.0) / 1000.0;
+		return entropy;
+	}
+	
+	static void setEntropy(ImageView img) {
+		
+	}
+	
+	static int[] getHistogram(ImageView img) 
+	{
+		int [] histogram = new int[256];
+		int [] pixels = img.getPixels();
+		for(int i = 0; i < pixels.length; i++) {
+			int pix = pixels[i] >> 16 & 0xff;
+    		//contribute to histogram statistics
+    		histogram[pix]++;
+    	}
+		for(int i = 0; i < histogram.length; i++) {
+			System.out.println(i + ": " + histogram[i]);
+		}
+		System.out.println(histogram[0]);
+		System.out.println(histogram[254]);
+		return histogram;
+	}
+	
+	static int getPixelSum(int [] histogram) 
+	{
+		int pixelSum = 0;
+		for (int i = 0; i < histogram.length; i++) {
+			if (histogram[i] != 0) {
+				pixelSum += histogram[i];
+			}
+		}
+		System.out.println("Pixel sum: " + pixelSum);
+		return pixelSum;
 	}
 }
