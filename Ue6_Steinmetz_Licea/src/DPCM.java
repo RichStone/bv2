@@ -19,9 +19,8 @@ import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 import javax.swing.border.TitledBorder;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
 public class DPCM extends JPanel 
@@ -40,6 +39,8 @@ public class DPCM extends JPanel
 	private JLabel statusLine;
 	private JComboBox<String> method;
 	
+	private double entropy = 0;
+	
 	public DPCM() 
 	{
 		super(new BorderLayout(borderWidth, borderWidth));
@@ -57,7 +58,7 @@ public class DPCM extends JPanel
 		startView.setMaxSize(new Dimension(maxWidth, maxHeight));
 		TitledBorder startViewBorder = BorderFactory.createTitledBorder("Eingabebild");
 		startViewBorder.setTitleColor(Color.BLACK);
-		startView.setBorder(startViewBorder);
+		startView.setBorder(startViewBorder);	
 		
 		predictionView = new ImageView(startView.getImgWidth(), startView.getImgWidth());
 		predictionView.setMaxSize(new Dimension(maxWidth, maxHeight));
@@ -114,6 +115,16 @@ public class DPCM extends JPanel
 		images.add(predictionView);
 		images.add(reconstructedView);
 		
+		//entropy displaying
+		JLabel entropyLabel = new JLabel("Entropie: " + entropy);
+		JLabel entropyPredictionLabel = new JLabel("Entropie: " + 1);
+		JLabel entropyReconstructedLabel = new JLabel("Entropie: " + 2);
+		JPanel entropyDisplay = new JPanel(new GridLayout(1, 3));
+		entropyDisplay.add(entropyLabel);
+		entropyDisplay.add(entropyPredictionLabel);
+		entropyDisplay.add(entropyReconstructedLabel);
+		
+		
 		//status panel
 		JPanel status = new JPanel(new GridLayout(1, 3));
 		statusLine = new JLabel("Qua Qua");
@@ -121,7 +132,8 @@ public class DPCM extends JPanel
 		
 		add(controls, BorderLayout.NORTH);
 		add(images, BorderLayout.CENTER);
-		add(status, BorderLayout.SOUTH);
+		add(entropyDisplay, BorderLayout.SOUTH);
+//		add(status, BorderLayout.EAST);
 		
 		calculate();
 	}
