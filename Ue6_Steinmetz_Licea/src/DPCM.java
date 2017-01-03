@@ -58,7 +58,8 @@ public class DPCM extends JPanel
 		startView.setMaxSize(new Dimension(maxWidth, maxHeight));
 		TitledBorder startViewBorder = BorderFactory.createTitledBorder("Eingabebild");
 		startViewBorder.setTitleColor(Color.BLACK);
-		startView.setBorder(startViewBorder);	
+		startView.setBorder(startViewBorder);
+		startView.setPixels(convertToGrayscale(startView));
 		
 		predictionView = new ImageView(startView.getImgWidth(), startView.getImgWidth());
 		predictionView.setMaxSize(new Dimension(maxWidth, maxHeight));
@@ -161,6 +162,20 @@ public class DPCM extends JPanel
 			System.out.println("FU");
 			break;
 		}
+	}
+	
+	private static int[] convertToGrayscale(ImageView img) {
+		int [] pixels = img.getPixels();
+		for(int i = 0; i < pixels.length; i++) {
+			int argb = pixels[i];
+			int r = (argb >> 16) & 0xff;
+			int g = (argb >> 8) & 0xff;
+			int b = (argb) & 0xff;
+			int greyScale = (r + g + b) / 3;
+			
+			pixels[i] = (0xff << 24) | (greyScale << 16) | (greyScale << 8) | greyScale;
+		}
+		return pixels;
 	}
 	
 	private static void createAndShowGUI() {
