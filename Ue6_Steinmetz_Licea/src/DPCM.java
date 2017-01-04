@@ -11,6 +11,7 @@ import java.awt.event.ActionListener;
 import java.io.File;
 import java.util.Arrays;
 
+import javax.print.attribute.standard.PresentationDirection;
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
@@ -32,16 +33,16 @@ public class DPCM extends JPanel
 	
 	private static JFrame frame;
 	
-	private ImageView startView;
-	private ImageView predictionView;
-	private ImageView reconstructedView;
+	private static ImageView startView;
+	private static ImageView predictionView;
+	private static ImageView reconstructedView;
 	
 	private JLabel statusLine;
 	private JComboBox<String> method;
 	
-	private double entropyStart;
-	private double entropyPredictor;
-	private double entropyReconstructed;
+	private static double entropyStart;
+	private static double entropyPredictor;
+	private static double entropyReconstructed;
 	
 	public DPCM() 
 	{
@@ -64,7 +65,7 @@ public class DPCM extends JPanel
 		//convert to gray scale
 		startView.setPixels(convertToGrayscale(startView));
 		
-		predictionView = new ImageView(startView.getImgWidth(), startView.getImgWidth());
+		predictionView = new ImageView(input1);
 		predictionView.setMaxSize(new Dimension(maxWidth, maxHeight));
 		TitledBorder predictionViewBorder = BorderFactory.createTitledBorder("Prädiktionsfehlerbild");
 		predictionViewBorder.setTitleColor(Color.GRAY);
@@ -119,12 +120,12 @@ public class DPCM extends JPanel
 		images.add(predictionView);
 		images.add(reconstructedView);
 		
-		getEntropy(startView);
+		setAllEntropies(startView, predictionView, reconstructedView);
 		
 		//entropy displaying
 		JLabel entropyStartLabel = new JLabel("Entropie: " + getEntropy(startView));
 		JLabel entropyPredictionLabel = new JLabel("Entropie: " + getEntropy(predictionView));
-		JLabel entropyReconstructedLabel = new JLabel("Entropie: " + getEntropy(reconstructedView));
+		JLabel entropyReconstructedLabel = new JLabel("Entropie: " + getEntropy(reconstructedView) + ", MSE = ");
 		JPanel entropyDisplay = new JPanel(new GridLayout(1, 3));
 		entropyDisplay.add(entropyStartLabel);
 		entropyDisplay.add(entropyPredictionLabel);
@@ -158,6 +159,7 @@ public class DPCM extends JPanel
 		switch(method.getSelectedIndex()) {
 		case 0:
 			System.out.println("a cool method will be here");
+			predictA();
 			break;
 		case 1:
 			System.out.println("and here");
@@ -167,6 +169,62 @@ public class DPCM extends JPanel
 			System.out.println("FU");
 			break;
 		}
+	}
+	
+	private static void predictA() 
+	{
+		//!?!?!?!??!?!? gives crazy values but works on second click
+		int imgHeight = startView.getHeight();
+		int imgWidth = startView.getWidth();
+		int[] pixelsOld = startView.getPixels();	
+		int[] pixelsNew = new int[pixelsOld.length];
+		
+		for(int y = 0; y < imgWidth; y++) {
+			for(int x = 0; x < imgHeight; x++) {
+				
+				//posX is the X of a C-B-A-X square kernel
+				int posX = y * imgWidth + x;
+				int posA = y * imgWidth + (x - 1);
+				
+				//upper edge handling
+				if(posX >= pixelsOld.length) {
+					continue;
+				}
+				
+				//value of the pixel X of a C-B-A-X square kernel
+				int valX = pixelsOld[posX] & 0xff;
+				
+				int valA;
+				//set value for A
+				if(posA < 0) {
+					valA = 128;
+				}
+				else {
+					valA = pixelsOld[posA] & 0xff;
+				}
+				
+				//calculate e
+				int e = valX - valA;
+				System.out.println(posX);
+				System.out.println("value x: " + valX);
+				System.out.println("value a: " + valA);
+				System.out.println("first e: " + e);
+				
+				//tune 
+				e += 128;
+				if(e > 255) {
+					e = 255;
+				}
+				if(e < 0) {
+					e = 0;
+				}
+				System.out.println("end value e: " + e);
+				pixelsNew[posX] = (0xff << 24) | (e << 16) | (e << 8) | e;
+				
+			}
+		}
+		predictionView.setPixels(pixelsNew);
+		//TODO entropy change to be done here
 	}
 	
 	/**
@@ -249,8 +307,10 @@ public class DPCM extends JPanel
 		return entropy;
 	}
 	
-	static void setEntropy(ImageView img) {
-		
+	static void setAllEntropies(ImageView startImg, ImageView predictionImg, ImageView reconstructedImg) {
+		entropyStart = getEntropy(startImg);
+		entropyPredictor = getEntropy(predictionImg);
+		entropyReconstructed = getEntropy(reconstructedImg);
 	}
 	
 	static int[] getHistogram(ImageView img) 
@@ -258,15 +318,10 @@ public class DPCM extends JPanel
 		int [] histogram = new int[256];
 		int [] pixels = img.getPixels();
 		for(int i = 0; i < pixels.length; i++) {
-			int pix = pixels[i] >> 16 & 0xff;
+			int pix = pixels[i] & 0xff;
     		//contribute to histogram statistics
     		histogram[pix]++;
     	}
-		for(int i = 0; i < histogram.length; i++) {
-			System.out.println(i + ": " + histogram[i]);
-		}
-		System.out.println(histogram[0]);
-		System.out.println(histogram[254]);
 		return histogram;
 	}
 	
@@ -278,7 +333,6 @@ public class DPCM extends JPanel
 				pixelSum += histogram[i];
 			}
 		}
-		System.out.println("Pixel sum: " + pixelSum);
 		return pixelSum;
 	}
 }
