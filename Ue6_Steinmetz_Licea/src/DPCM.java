@@ -39,6 +39,9 @@ public class DPCM extends JPanel
 	
 	private JLabel statusLine;
 	private JComboBox<String> method;
+	JLabel entropyStartLabel;
+	static JLabel entropyPredictionLabel;
+	JLabel entropyReconstructedLabel;
 	
 	private static double entropyStart;
 	private static double entropyPredictor;
@@ -83,7 +86,8 @@ public class DPCM extends JPanel
 		c.insets = new Insets(0, borderWidth, 0, 0);
 		
 		//predictor methods
-		String [] methodNames = {"A (horizontal)", "B (vertikal)", "C (diagonal)", "A + B - C", "(A + B) / 2", "adaptiv"};
+		//TODO add empty method to change from
+		String [] methodNames = {"Methode wählen", "A (horizontal)", "B (vertikal)", "C (diagonal)", "A + B - C", "(A + B) / 2", "adaptiv"};
 		
 		method = new JComboBox<String>(methodNames);
 		method.setSelectedIndex(0);
@@ -120,12 +124,12 @@ public class DPCM extends JPanel
 		images.add(predictionView);
 		images.add(reconstructedView);
 		
-		setAllEntropies(startView, predictionView, reconstructedView);
+		setAllEntropies();
 		
 		//entropy displaying
-		JLabel entropyStartLabel = new JLabel("Entropie: " + getEntropy(startView));
-		JLabel entropyPredictionLabel = new JLabel("Entropie: " + getEntropy(predictionView));
-		JLabel entropyReconstructedLabel = new JLabel("Entropie: " + getEntropy(reconstructedView) + ", MSE = ");
+		entropyStartLabel = new JLabel("Entropie: " + getEntropy(startView));
+		entropyPredictionLabel = new JLabel("Entropie: " + getEntropy(predictionView));
+		entropyReconstructedLabel = new JLabel("Entropie: " + getEntropy(reconstructedView) + ", MSE = ");
 		JPanel entropyDisplay = new JPanel(new GridLayout(1, 3));
 		entropyDisplay.add(entropyStartLabel);
 		entropyDisplay.add(entropyPredictionLabel);
@@ -158,14 +162,13 @@ public class DPCM extends JPanel
 	protected void calculate() {
 		switch(method.getSelectedIndex()) {
 		case 0:
-			System.out.println("a cool method will be here");
-			predictA();
+			System.out.println("nothin case 0");
 			break;
 		case 1:
 			System.out.println("and here");
+			predictA();
 			break;
 		default:
-			Arrays.fill(predictionView.getPixels(), 0xffffffff);
 			System.out.println("FU");
 			break;
 		}
@@ -205,10 +208,6 @@ public class DPCM extends JPanel
 				
 				//calculate e
 				int e = valX - valA;
-				System.out.println(posX);
-				System.out.println("value x: " + valX);
-				System.out.println("value a: " + valA);
-				System.out.println("first e: " + e);
 				
 				//tune 
 				e += 128;
@@ -218,13 +217,12 @@ public class DPCM extends JPanel
 				if(e < 0) {
 					e = 0;
 				}
-				System.out.println("end value e: " + e);
 				pixelsNew[posX] = (0xff << 24) | (e << 16) | (e << 8) | e;
 				
 			}
 		}
 		predictionView.setPixels(pixelsNew);
-		//TODO entropy change to be done here
+		entropyPredictionLabel.setText("Entropie: " + getEntropy(predictionView));;
 	}
 	
 	/**
@@ -304,13 +302,14 @@ public class DPCM extends JPanel
 		}
 		//reduce fraction
 		entropy = Math.round(entropy * 1000.0) / 1000.0;
+		System.out.println("entropy: " + entropy);
 		return entropy;
 	}
 	
-	static void setAllEntropies(ImageView startImg, ImageView predictionImg, ImageView reconstructedImg) {
-		entropyStart = getEntropy(startImg);
-		entropyPredictor = getEntropy(predictionImg);
-		entropyReconstructed = getEntropy(reconstructedImg);
+	static void setAllEntropies() {
+		entropyStart = getEntropy(startView);
+		entropyPredictor = getEntropy(predictionView);
+		entropyReconstructed = getEntropy(reconstructedView);
 	}
 	
 	static int[] getHistogram(ImageView img) 
