@@ -162,18 +162,31 @@ public class DPCM extends JPanel
 	protected void calculate() {
 		switch(method.getSelectedIndex()) {
 		case 0:
-			System.out.println("nothin case 0");
 			break;
 		case 1:
-			System.out.println("and here");
 			predictA();
 			break;
+		case 2: 
+			predictB();
+			break;
+		case 3:
+			predictC();
+			break;
+		case 4:
+			predictA_plus_B_minusC();
+			break;
+		case 5: 
+			predictA_plus_B_by_2();
+			break;
+		case 6:
+			predictAdaptiv();
+			break;
 		default:
-			System.out.println("FU");
+			System.out.println("default");
 			break;
 		}
 	}
-	
+
 	private static void predictA() 
 	{
 		//!?!?!?!??!?!? gives crazy values but works on second click
@@ -182,8 +195,8 @@ public class DPCM extends JPanel
 		int[] pixelsOld = startView.getPixels();	
 		int[] pixelsNew = new int[pixelsOld.length];
 		
-		for(int y = 0; y < imgWidth; y++) {
-			for(int x = 0; x < imgHeight; x++) {
+		for(int y = 0; y < imgHeight; y++) {
+			for(int x = 0; x < imgWidth; x++) {
 				
 				//posX is the X of a C-B-A-X square kernel
 				int posX = y * imgWidth + x;
@@ -222,6 +235,282 @@ public class DPCM extends JPanel
 			}
 		}
 		predictionView.setPixels(pixelsNew);
+		entropyPredictionLabel.setText("Entropie: " + getEntropy(predictionView));;
+	}
+	
+	private static void predictB() 
+	{
+		int imgHeight = startView.getHeight();
+		int imgWidth = startView.getWidth();
+		int[] pixelsOld = startView.getPixels();	
+		int[] pixelsNew = new int[pixelsOld.length];
+		
+		for(int y = 0; y < imgWidth; y++) {
+			for(int x = 0; x < imgHeight; x++) {
+				
+				//posX is the X of a C-B-A-X square kernel
+				int posX = y * imgWidth + x;
+				int posA = (y - 1) * imgWidth + x;
+				
+				//upper edge handling
+				if(posX >= pixelsOld.length) {
+					continue;
+				}
+				
+				//value of the pixel X of a C-B-A-X square kernel
+				int valX = pixelsOld[posX] & 0xff;
+				
+				int valA;
+				//set value for A
+				if(posA < 0) {
+					valA = 128;
+				}
+				else {
+					valA = pixelsOld[posA] & 0xff;
+				}
+				
+				//calculate e
+				int e = valX - valA;
+				
+				//tune 
+				e += 128;
+				if(e > 255) {
+					e = 255;
+				}
+				if(e < 0) {
+					e = 0;
+				}
+				pixelsNew[posX] = (0xff << 24) | (e << 16) | (e << 8) | e;
+				
+			}
+		}
+		predictionView.setPixels(pixelsNew);
+		entropyPredictionLabel.setText("Entropie: " + getEntropy(predictionView));;
+	}
+	
+	private static void predictC() 
+	{
+		int imgHeight = startView.getHeight();
+		int imgWidth = startView.getWidth();
+		int[] pixelsOld = startView.getPixels();	
+		int[] pixelsNew = new int[pixelsOld.length];
+		
+		for(int y = 0; y < imgWidth; y++) {
+			for(int x = 0; x < imgHeight; x++) {
+				
+				//posX is the X of a C-B-A-X square kernel
+				int posX = y * imgWidth + x;
+				int posA = (y - 1) * imgWidth + (x - 1);
+				
+				//upper edge handling
+				if(posX >= pixelsOld.length) {
+					continue;
+				}
+				
+				//value of the pixel X of a C-B-A-X square kernel
+				int valX = pixelsOld[posX] & 0xff;
+				
+				int valA;
+				//set value for A
+				if(posA < 0) {
+					valA = 128;
+				}
+				else {
+					valA = pixelsOld[posA] & 0xff;
+				}
+				
+				//calculate e
+				int e = valX - valA;
+				
+				//tune 
+				e += 128;
+				if(e > 255) {
+					e = 255;
+				}
+				if(e < 0) {
+					e = 0;
+				}
+				pixelsNew[posX] = (0xff << 24) | (e << 16) | (e << 8) | e;
+				
+			}
+		}
+		predictionView.setPixels(pixelsNew);
+		entropyPredictionLabel.setText("Entropie: " + getEntropy(predictionView));;
+	}
+	
+	private static void predictA_plus_B_minusC() 
+	{
+		int imgHeight = startView.getHeight();
+		int imgWidth = startView.getWidth();
+		int[] pixelsOld = startView.getPixels();	
+		int[] pixelsNew = new int[pixelsOld.length];
+		
+		for(int y = 0; y < imgWidth; y++) {
+			for(int x = 0; x < imgHeight; x++) {
+				
+				//posX is the X of a C-B-A-X square kernel
+				int posX = y * imgWidth + x;
+				int posA = y * imgWidth + (x - 1);
+				int posB = (y - 1) * imgWidth + x;
+				int posC = (y - 1) * imgWidth + (x - 1);
+				
+				//upper edge handling
+				if(posX >= pixelsOld.length) {
+					continue;
+				}
+				
+				//value of the pixel X of a C-B-A-X square kernel
+				int valX = pixelsOld[posX] & 0xff;
+				
+				int valA, valB, valC;
+				//set values for A, B and C
+				if(posA < 0) valA = 128;
+				else valA = pixelsOld[posA] & 0xff;
+				if(posB < 0) valB = 128;
+				else valB = pixelsOld[posB] & 0xff;
+				if(posC < 0) valC = 128;
+				else valC = pixelsOld[posC] & 0xff;
+				//set searched value
+				int valSum = valA + valB - valC;
+				//handle overflow
+				if(valSum < 0 || valSum > 255) valSum = 128;
+				
+				//calculate e
+				int e = valX - valSum;
+				
+				//tune 
+				e += 128;
+				if(e > 255) {
+					e = 255;
+				}
+				if(e < 0) {
+					e = 0;
+				}
+				pixelsNew[posX] = (0xff << 24) | (e << 16) | (e << 8) | e;
+				
+			}
+		}
+		predictionView.setPixels(pixelsNew);
+		entropyPredictionLabel.setText("Entropie: " + getEntropy(predictionView));;
+	}
+	
+	private static void predictA_plus_B_by_2() 
+	{
+		int imgHeight = startView.getHeight();
+		int imgWidth = startView.getWidth();
+		int[] pixelsOld = startView.getPixels();	
+		int[] pixelsNew = new int[pixelsOld.length];
+		
+		for(int y = 0; y < imgWidth; y++) {
+			for(int x = 0; x < imgHeight; x++) {
+				
+				//posX is the X of a C-B-A-X square kernel
+				int posX = y * imgWidth + x;
+				int posA = y * imgWidth + (x - 1);
+				int posB = (y - 1) * imgWidth + x;
+				
+				//upper edge handling
+				if(posX >= pixelsOld.length) {
+					continue;
+				}
+				
+				//value of the pixel X of a C-B-A-X square kernel
+				int valX = pixelsOld[posX] & 0xff;
+				
+				int valA, valB;
+				//set values for A, B and C
+				if(posA < 0) valA = 128;
+				else valA = pixelsOld[posA] & 0xff;
+				if(posB < 0) valB = 128;
+				else valB = pixelsOld[posB] & 0xff;
+				//set searched value
+				int valSum = (valA + valB) / 2;
+				//handle overflow
+				if(valSum < 0 || valSum > 255) valSum = 128;
+				
+				//calculate e
+				int e = valX - valSum;
+				
+				//tune 
+				e += 128;
+				if(e > 255) {
+					e = 255;
+				}
+				if(e < 0) {
+					e = 0;
+				}
+				pixelsNew[posX] = (0xff << 24) | (e << 16) | (e << 8) | e;
+				
+			}
+		}
+		predictionView.setPixels(pixelsNew);
+		entropyPredictionLabel.setText("Entropie: " + getEntropy(predictionView));;
+	}
+	
+	private static void predictAdaptiv() 
+	{
+		int imgHeight = startView.getHeight();
+		int imgWidth = startView.getWidth();
+		int[] pixelsOld = startView.getPixels();	
+		int[] pixelsNew = new int[pixelsOld.length];
+		int[] sArr = new int[pixelsOld.length];
+		
+		for(int y = 0; y < imgWidth; y++) {
+			for(int x = 0; x < imgHeight; x++) {
+				
+				//posX is the X of a C-B-A-X square kernel
+				int posX = y * imgWidth + x;
+				int posA = y * imgWidth + (x - 1);
+				int posB = (y - 1) * imgWidth + x;
+				int posC = (y - 1) * imgWidth + (x - 1);
+				
+				//upper edge handling
+				if(posX >= pixelsOld.length) {
+					continue;
+				}
+				
+				//value of the pixel X of a C-B-A-X square kernel
+				int valX = pixelsOld[posX] & 0xff;
+				
+				int valA, valB, valC;
+				//set values for A, B and C
+				if(posA < 0) valA = 128;
+				else valA = pixelsOld[posA] & 0xff;
+				if(posB < 0) valB = 128;
+				else valB = pixelsOld[posB] & 0xff;
+				if(posC < 0) valC = 128;
+				else valC = pixelsOld[posC] & 0xff;
+				//set searched value
+				int valTarget;
+				int aMinusC = Math.abs(valA - valC);
+				int bMinusC = Math.abs(valB - valC);
+				if(aMinusC < bMinusC) {
+					valTarget = valB;
+				} else {
+					valTarget = valA;
+				}
+				//handle overflow
+				if(valTarget < 0 || valTarget > 255) valTarget = 128;
+				
+				//calculate e
+				int e = valX - valTarget;
+				
+				//tune 
+				e += 128;
+				if(e > 255) {
+					e = 255;
+				}
+				if(e < 0) {
+					e = 0;
+				}
+				
+				pixelsNew[posX] = (0xff << 24) | (e << 16) | (e << 8) | e;
+//				int s = valTarget - e;
+//				sArr[posX] = (0xff << 24) | (s << 16) | (s << 8) | s;
+			}
+		}
+		predictionView.setPixels(pixelsNew);
+//		reconstructedView.setPixels(sArr);
 		entropyPredictionLabel.setText("Entropie: " + getEntropy(predictionView));;
 	}
 	
