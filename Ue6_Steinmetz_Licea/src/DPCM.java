@@ -27,8 +27,8 @@ import javax.swing.filechooser.FileNameExtensionFilter;
 public class DPCM extends JPanel 
 {
 	private static final int borderWidth = 5;
-	private static final int maxWidth = 460;
-	private static final int maxHeight = 320;
+	private static final int maxWidth = 910;
+	private static final int maxHeight = 910;
 	private static File openPath = new File(".");
 	
 	private static JFrame frame;
@@ -189,11 +189,11 @@ public class DPCM extends JPanel
 
 	private static void predictA() 
 	{
-		//!?!?!?!??!?!? gives crazy values but works on second click
-		int imgHeight = startView.getHeight();
-		int imgWidth = startView.getWidth();
+		int imgHeight = startView.getImgHeight();
+		int imgWidth = startView.getImgWidth();
 		int[] pixelsOld = startView.getPixels();	
 		int[] pixelsNew = new int[pixelsOld.length];
+		int[] sArr = new int[pixelsOld.length];
 		
 		for(int y = 0; y < imgHeight; y++) {
 			for(int x = 0; x < imgWidth; x++) {
@@ -222,6 +222,9 @@ public class DPCM extends JPanel
 				//calculate e
 				int e = valX - valA;
 				
+				//set s for the reconstruction
+				int s = valA - e;
+				
 				//tune 
 				e += 128;
 				if(e > 255) {
@@ -231,22 +234,23 @@ public class DPCM extends JPanel
 					e = 0;
 				}
 				pixelsNew[posX] = (0xff << 24) | (e << 16) | (e << 8) | e;
-				
+				sArr[posX] = (0xff << 24) | (s << 16) | (s << 8) | s;
 			}
 		}
 		predictionView.setPixels(pixelsNew);
+		reconstructedView.setPixels(sArr);
 		entropyPredictionLabel.setText("Entropie: " + getEntropy(predictionView));;
 	}
 	
 	private static void predictB() 
 	{
-		int imgHeight = startView.getHeight();
-		int imgWidth = startView.getWidth();
+		int imgHeight = startView.getImgHeight();
+		int imgWidth = startView.getImgWidth();
 		int[] pixelsOld = startView.getPixels();	
 		int[] pixelsNew = new int[pixelsOld.length];
 		
-		for(int y = 0; y < imgWidth; y++) {
-			for(int x = 0; x < imgHeight; x++) {
+		for(int y = 0; y < imgHeight; y++) {
+			for(int x = 0; x < imgWidth; x++) {
 				
 				//posX is the X of a C-B-A-X square kernel
 				int posX = y * imgWidth + x;
@@ -290,13 +294,13 @@ public class DPCM extends JPanel
 	
 	private static void predictC() 
 	{
-		int imgHeight = startView.getHeight();
-		int imgWidth = startView.getWidth();
+		int imgHeight = startView.getImgHeight();
+		int imgWidth = startView.getImgWidth();
 		int[] pixelsOld = startView.getPixels();	
 		int[] pixelsNew = new int[pixelsOld.length];
 		
-		for(int y = 0; y < imgWidth; y++) {
-			for(int x = 0; x < imgHeight; x++) {
+		for(int y = 0; y < imgHeight; y++) {
+			for(int x = 0; x < imgWidth; x++) {
 				
 				//posX is the X of a C-B-A-X square kernel
 				int posX = y * imgWidth + x;
@@ -340,13 +344,13 @@ public class DPCM extends JPanel
 	
 	private static void predictA_plus_B_minusC() 
 	{
-		int imgHeight = startView.getHeight();
-		int imgWidth = startView.getWidth();
+		int imgHeight = startView.getImgHeight();
+		int imgWidth = startView.getImgWidth();
 		int[] pixelsOld = startView.getPixels();	
 		int[] pixelsNew = new int[pixelsOld.length];
 		
-		for(int y = 0; y < imgWidth; y++) {
-			for(int x = 0; x < imgHeight; x++) {
+		for(int y = 0; y < imgHeight; y++) {
+			for(int x = 0; x < imgWidth; x++) {
 				
 				//posX is the X of a C-B-A-X square kernel
 				int posX = y * imgWidth + x;
@@ -396,13 +400,13 @@ public class DPCM extends JPanel
 	
 	private static void predictA_plus_B_by_2() 
 	{
-		int imgHeight = startView.getHeight();
-		int imgWidth = startView.getWidth();
+		int imgHeight = startView.getImgHeight();
+		int imgWidth = startView.getImgWidth();
 		int[] pixelsOld = startView.getPixels();	
 		int[] pixelsNew = new int[pixelsOld.length];
 		
-		for(int y = 0; y < imgWidth; y++) {
-			for(int x = 0; x < imgHeight; x++) {
+		for(int y = 0; y < imgHeight; y++) {
+			for(int x = 0; x < imgWidth; x++) {
 				
 				//posX is the X of a C-B-A-X square kernel
 				int posX = y * imgWidth + x;
@@ -449,14 +453,14 @@ public class DPCM extends JPanel
 	
 	private static void predictAdaptiv() 
 	{
-		int imgHeight = startView.getHeight();
-		int imgWidth = startView.getWidth();
+		int imgHeight = startView.getImgHeight();
+		int imgWidth = startView.getImgWidth();
 		int[] pixelsOld = startView.getPixels();	
 		int[] pixelsNew = new int[pixelsOld.length];
 		int[] sArr = new int[pixelsOld.length];
 		
-		for(int y = 0; y < imgWidth; y++) {
-			for(int x = 0; x < imgHeight; x++) {
+		for(int y = 0; y < imgHeight; y++) {
+			for(int x = 0; x < imgWidth; x++) {
 				
 				//posX is the X of a C-B-A-X square kernel
 				int posX = y * imgWidth + x;
@@ -495,6 +499,9 @@ public class DPCM extends JPanel
 				//calculate e
 				int e = valX - valTarget;
 				
+				//set s for the reconstruction
+				int s = valTarget - e;
+				
 				//tune 
 				e += 128;
 				if(e > 255) {
@@ -504,9 +511,8 @@ public class DPCM extends JPanel
 					e = 0;
 				}
 				
-				pixelsNew[posX] = (0xff << 24) | (e << 16) | (e << 8) | e;
-//				int s = valTarget - e;
-//				sArr[posX] = (0xff << 24) | (s << 16) | (s << 8) | s;
+				pixelsNew[posX] = (0xff << 24) | (s << 16) | (s << 8) | s;
+				sArr[posX] = (0xff << 24) | (s << 16) | (s << 8) | s;
 			}
 		}
 		predictionView.setPixels(pixelsNew);
