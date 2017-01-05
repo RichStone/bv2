@@ -48,7 +48,6 @@ public class DPCM extends JPanel
 	private static double entropyStart;
 	private static double entropyPredictor;
 	private static double entropyReconstructed;
-	private static double mse;
 	
 	public DPCM() 
 	{
@@ -242,7 +241,8 @@ public class DPCM extends JPanel
 		}
 		predictionView.setPixels(pixelsNew);
 		reconstructedView.setPixels(sArr);
-		entropyPredictionLabel.setText("Entropie: " + getEntropy(predictionView));;
+		entropyPredictionLabel.setText("Entropie: " + getEntropy(predictionView));
+		entropyReconstructedLabel.setText("Entropie: " + getEntropy(reconstructedView) + ", MSE = " + calculateMse());
 	}
 	
 	private static void predictB() 
@@ -297,7 +297,8 @@ public class DPCM extends JPanel
 		}
 		predictionView.setPixels(pixelsNew);
 		reconstructedView.setPixels(sArr);
-		entropyPredictionLabel.setText("Entropie: " + getEntropy(predictionView));;
+		entropyPredictionLabel.setText("Entropie: " + getEntropy(predictionView));
+		entropyReconstructedLabel.setText("Entropie: " + getEntropy(reconstructedView) + ", MSE = " + calculateMse());
 	}
 	
 	private static void predictC() 
@@ -352,7 +353,9 @@ public class DPCM extends JPanel
 		}
 		predictionView.setPixels(pixelsNew);
 		reconstructedView.setPixels(sArr);
-		entropyPredictionLabel.setText("Entropie: " + getEntropy(predictionView));;
+		entropyPredictionLabel.setText("Entropie: " + getEntropy(predictionView));
+		entropyReconstructedLabel.setText("Entropie: " + getEntropy(reconstructedView) + ", MSE = " + calculateMse());
+
 	}
 	
 	private static void predictA_plus_B_minusC() 
@@ -414,6 +417,7 @@ public class DPCM extends JPanel
 		predictionView.setPixels(pixelsNew);
 		reconstructedView.setPixels(sArr);
 		entropyPredictionLabel.setText("Entropie: " + getEntropy(predictionView));;
+		entropyReconstructedLabel.setText("Entropie: " + getEntropy(reconstructedView) + ", MSE = " + calculateMse());
 	}
 	
 	private static void predictA_plus_B_by_2() 
@@ -471,7 +475,8 @@ public class DPCM extends JPanel
 		}
 		predictionView.setPixels(pixelsNew);
 		reconstructedView.setPixels(sArr);
-		entropyPredictionLabel.setText("Entropie: " + getEntropy(predictionView));;
+		entropyPredictionLabel.setText("Entropie: " + getEntropy(predictionView));
+		entropyReconstructedLabel.setText("Entropie: " + getEntropy(reconstructedView) + ", MSE = " + calculateMse());
 	}
 	
 	private static void predictAdaptiv() 
@@ -524,8 +529,8 @@ public class DPCM extends JPanel
 				
 				//set s for the reconstruction
 				int s = valTarget - e;
-				System.out.println(e);
-				//tune 
+				
+				//tune e
 				e += 128;
 				if(e > 255) {
 					e = 255;
@@ -541,8 +546,7 @@ public class DPCM extends JPanel
 		predictionView.setPixels(pixelsNew);
 		reconstructedView.setPixels(sArr);
 		entropyPredictionLabel.setText("Entropie: " + getEntropy(predictionView));
-		mse = calculateMse();
-		entropyReconstructedLabel.setText("Entropie: " + getEntropy(reconstructedView) + ", MSE = " + mse);
+		entropyReconstructedLabel.setText("Entropie: " + getEntropy(reconstructedView) + ", MSE = " + calculateMse());
 	}
 	
 	/**
@@ -550,7 +554,8 @@ public class DPCM extends JPanel
 	 * @param img convert this img to gray scale
 	 * @return the new array with the gray values
 	 */
-	private static int[] convertToGrayscale(ImageView img) {
+	private static int[] convertToGrayscale(ImageView img) 
+	{
 		int [] pixels = img.getPixels();
 		for(int i = 0; i < pixels.length; i++) {
 			int argb = pixels[i];
@@ -564,7 +569,8 @@ public class DPCM extends JPanel
 		return pixels;
 	}
 	
-	private static void createAndShowGUI() {
+	private static void createAndShowGUI() 
+	{
 		// create and setup the window
 		frame = new JFrame("DPCM");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -581,7 +587,8 @@ public class DPCM extends JPanel
         frame.setVisible(true);
 	}
 
-	private File openFile(String title) {
+	private File openFile(String title) 
+	{
 		JFileChooser chooser = new JFileChooser();
         FileNameExtensionFilter filter = new FileNameExtensionFilter("Images (*.jpg, *.png, *.gif)", "jpg", "png", "gif");
         chooser.setFileFilter(filter);
@@ -595,7 +602,8 @@ public class DPCM extends JPanel
 	 * Open file dialog used to select a new image.
 	 * @return The selected file object or null on cancel.
 	 */
-	private File openFile() {
+	private File openFile() 
+	{
 		// file open dialog
         JFileChooser chooser = new JFileChooser();
         FileNameExtensionFilter filter = new FileNameExtensionFilter("Images (*.jpg, *.png, *.gif)", "jpg", "png", "gif");
@@ -622,28 +630,29 @@ public class DPCM extends JPanel
 		}
 		//reduce fraction
 		entropy = Math.round(entropy * 1000.0) / 1000.0;
-		System.out.println("entropy: " + entropy);
 		return entropy;
 	}
 	
-	static double calculateMse() {
-		double mse = 0;
-		int [] histogramStart = getHistogram(startView);
-		int [] histogramReconstructed = getHistogram(reconstructedView);
-		
-		for(int i = 0; i < histogramStart.length; i++) {
-			int error = histogramStart[i] - histogramReconstructed[i];
-			System.out.println(error);
-			mse += error * error;
-		}
-		mse = mse / histogramStart.length;
-		return mse;
-	}
-	
-	static void setAllEntropies() {
+	static void setAllEntropies() 
+	{
 		entropyStart = getEntropy(startView);
 		entropyPredictor = getEntropy(predictionView);
 		entropyReconstructed = getEntropy(reconstructedView);
+	}
+
+	static double calculateMse() 
+	{
+		double mse = 0;
+		int [] pixelsStartImg = startView.getPixels().clone();
+		int [] pixelsReconstructedImg = reconstructedView.getPixels().clone();
+		
+		for(int i = 0; i < pixelsStartImg.length; i++) {
+			double error = (double)((pixelsStartImg[i] & 0xff) - (pixelsReconstructedImg[i] & 0xff));
+			mse += Math.pow(error, 2);
+		}
+		mse = mse / (double)pixelsStartImg.length;
+		mse = Math.round(mse * 100.0) / 100.0;
+		return mse;
 	}
 	
 	static int[] getHistogram(ImageView img) 
