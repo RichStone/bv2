@@ -42,11 +42,13 @@ public class DPCM extends JPanel
 	private JComboBox<String> method;
 	JLabel entropyStartLabel;
 	static JLabel entropyPredictionLabel;
-	JLabel entropyReconstructedLabel;
+	static JLabel entropyReconstructedLabel;
+	
 	
 	private static double entropyStart;
 	private static double entropyPredictor;
 	private static double entropyReconstructed;
+	private static double mse;
 	
 	public DPCM() 
 	{
@@ -129,8 +131,8 @@ public class DPCM extends JPanel
 		
 		//entropy displaying
 		entropyStartLabel = new JLabel("Entropie: " + getEntropy(startView));
-		entropyPredictionLabel = new JLabel("Entropie: " + getEntropy(predictionView));
-		entropyReconstructedLabel = new JLabel("Entropie: " + getEntropy(reconstructedView) + ", MSE = ");
+		entropyPredictionLabel = new JLabel("Originalbild Entropie: " + getEntropy(predictionView));
+		entropyReconstructedLabel = new JLabel("");
 		JPanel entropyDisplay = new JPanel(new GridLayout(1, 3));
 		entropyDisplay.add(entropyStartLabel);
 		entropyDisplay.add(entropyPredictionLabel);
@@ -249,6 +251,7 @@ public class DPCM extends JPanel
 		int imgWidth = startView.getImgWidth();
 		int[] pixelsOld = startView.getPixels();	
 		int[] pixelsNew = new int[pixelsOld.length];
+		int[] sArr = new int[pixelsOld.length];
 		
 		for(int y = 0; y < imgHeight; y++) {
 			for(int x = 0; x < imgWidth; x++) {
@@ -277,6 +280,9 @@ public class DPCM extends JPanel
 				//calculate e
 				int e = valX - valA;
 				
+				//set s for the reconstruction
+				int s = valA - e;
+				
 				//tune 
 				e += 128;
 				if(e > 255) {
@@ -286,10 +292,11 @@ public class DPCM extends JPanel
 					e = 0;
 				}
 				pixelsNew[posX] = (0xff << 24) | (e << 16) | (e << 8) | e;
-				
+				sArr[posX] = (0xff << 24) | (s << 16) | (s << 8) | s;
 			}
 		}
 		predictionView.setPixels(pixelsNew);
+		reconstructedView.setPixels(sArr);
 		entropyPredictionLabel.setText("Entropie: " + getEntropy(predictionView));;
 	}
 	
@@ -299,6 +306,7 @@ public class DPCM extends JPanel
 		int imgWidth = startView.getImgWidth();
 		int[] pixelsOld = startView.getPixels();	
 		int[] pixelsNew = new int[pixelsOld.length];
+		int[] sArr = new int[pixelsOld.length];
 		
 		for(int y = 0; y < imgHeight; y++) {
 			for(int x = 0; x < imgWidth; x++) {
@@ -327,6 +335,9 @@ public class DPCM extends JPanel
 				//calculate e
 				int e = valX - valA;
 				
+				//set s for the reconstruction
+				int s = valA - e;
+				
 				//tune 
 				e += 128;
 				if(e > 255) {
@@ -336,10 +347,11 @@ public class DPCM extends JPanel
 					e = 0;
 				}
 				pixelsNew[posX] = (0xff << 24) | (e << 16) | (e << 8) | e;
-				
+				sArr[posX] = (0xff << 24) | (s << 16) | (s << 8) | s;
 			}
 		}
 		predictionView.setPixels(pixelsNew);
+		reconstructedView.setPixels(sArr);
 		entropyPredictionLabel.setText("Entropie: " + getEntropy(predictionView));;
 	}
 	
@@ -349,6 +361,7 @@ public class DPCM extends JPanel
 		int imgWidth = startView.getImgWidth();
 		int[] pixelsOld = startView.getPixels();	
 		int[] pixelsNew = new int[pixelsOld.length];
+		int[] sArr = new int[pixelsOld.length];
 		
 		for(int y = 0; y < imgHeight; y++) {
 			for(int x = 0; x < imgWidth; x++) {
@@ -383,6 +396,9 @@ public class DPCM extends JPanel
 				//calculate e
 				int e = valX - valSum;
 				
+				//set s for the reconstruction
+				int s = valA - e;
+				
 				//tune 
 				e += 128;
 				if(e > 255) {
@@ -392,10 +408,11 @@ public class DPCM extends JPanel
 					e = 0;
 				}
 				pixelsNew[posX] = (0xff << 24) | (e << 16) | (e << 8) | e;
-				
+				sArr[posX] = (0xff << 24) | (s << 16) | (s << 8) | s;
 			}
 		}
 		predictionView.setPixels(pixelsNew);
+		reconstructedView.setPixels(sArr);
 		entropyPredictionLabel.setText("Entropie: " + getEntropy(predictionView));;
 	}
 	
@@ -405,6 +422,7 @@ public class DPCM extends JPanel
 		int imgWidth = startView.getImgWidth();
 		int[] pixelsOld = startView.getPixels();	
 		int[] pixelsNew = new int[pixelsOld.length];
+		int[] sArr = new int[pixelsOld.length];
 		
 		for(int y = 0; y < imgHeight; y++) {
 			for(int x = 0; x < imgWidth; x++) {
@@ -436,6 +454,9 @@ public class DPCM extends JPanel
 				//calculate e
 				int e = valX - valSum;
 				
+				//set s for the reconstruction
+				int s = valA - e;
+				
 				//tune 
 				e += 128;
 				if(e > 255) {
@@ -445,10 +466,11 @@ public class DPCM extends JPanel
 					e = 0;
 				}
 				pixelsNew[posX] = (0xff << 24) | (e << 16) | (e << 8) | e;
-				
+				sArr[posX] = (0xff << 24) | (s << 16) | (s << 8) | s;
 			}
 		}
 		predictionView.setPixels(pixelsNew);
+		reconstructedView.setPixels(sArr);
 		entropyPredictionLabel.setText("Entropie: " + getEntropy(predictionView));;
 	}
 	
@@ -502,7 +524,7 @@ public class DPCM extends JPanel
 				
 				//set s for the reconstruction
 				int s = valTarget - e;
-				
+				System.out.println(e);
 				//tune 
 				e += 128;
 				if(e > 255) {
@@ -512,13 +534,15 @@ public class DPCM extends JPanel
 					e = 0;
 				}
 				
-				pixelsNew[posX] = (0xff << 24) | (s << 16) | (s << 8) | s;
+				pixelsNew[posX] = (0xff << 24) | (e << 16) | (e << 8) | e;
 				sArr[posX] = (0xff << 24) | (s << 16) | (s << 8) | s;
 			}
 		}
 		predictionView.setPixels(pixelsNew);
-//		reconstructedView.setPixels(sArr);
-		entropyPredictionLabel.setText("Entropie: " + getEntropy(predictionView));;
+		reconstructedView.setPixels(sArr);
+		entropyPredictionLabel.setText("Entropie: " + getEntropy(predictionView));
+		mse = calculateMse();
+		entropyReconstructedLabel.setText("Entropie: " + getEntropy(reconstructedView) + ", MSE = " + mse);
 	}
 	
 	/**
@@ -600,6 +624,20 @@ public class DPCM extends JPanel
 		entropy = Math.round(entropy * 1000.0) / 1000.0;
 		System.out.println("entropy: " + entropy);
 		return entropy;
+	}
+	
+	static double calculateMse() {
+		double mse = 0;
+		int [] histogramStart = getHistogram(startView);
+		int [] histogramReconstructed = getHistogram(reconstructedView);
+		
+		for(int i = 0; i < histogramStart.length; i++) {
+			int error = histogramStart[i] - histogramReconstructed[i];
+			System.out.println(error);
+			mse += error * error;
+		}
+		mse = mse / histogramStart.length;
+		return mse;
 	}
 	
 	static void setAllEntropies() {
