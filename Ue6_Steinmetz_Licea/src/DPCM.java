@@ -82,6 +82,8 @@ public class DPCM extends JPanel
 		reconstructedViewBorder.setTitleColor(Color.BLACK);
 		reconstructedView.setBorder(reconstructedViewBorder);
 		
+		frame.pack();
+		
 		//control panel
 		JPanel controls = new JPanel(new GridBagLayout());
 		GridBagConstraints c = new GridBagConstraints();
@@ -108,8 +110,8 @@ public class DPCM extends JPanel
 				File input = openFile();
 				if(input != null) {
 					startView.loadImage(input);
-					startView = new ImageView(input);
-					startView.setMaxSize(new Dimension(maxWidth, maxHeight));
+        			startView.setMaxSize(new Dimension(maxWidth, maxHeight));
+        			frame.pack();
 					calculate();
 				}
 			}
