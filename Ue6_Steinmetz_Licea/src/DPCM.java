@@ -26,6 +26,7 @@ import javax.swing.filechooser.FileNameExtensionFilter;
 
 public class DPCM extends JPanel 
 {
+	private static final long serialVersionUID = 1L;
 	private static final int borderWidth = 5;
 	private static final int maxWidth = 910;
 	private static final int maxHeight = 910;
@@ -74,7 +75,7 @@ public class DPCM extends JPanel
 		predictionViewBorder.setTitleColor(Color.GRAY);
 		predictionView.setBorder(predictionViewBorder);
 		
-		reconstructedView = new ImageView(startView.getImgWidth(), startView.getImgWidth());
+		reconstructedView = new ImageView(startView.getImgWidth(), startView.getImgHeight());
 		reconstructedView.setMaxSize(new Dimension(maxWidth, maxHeight));
 		TitledBorder reconstructedViewBorder = BorderFactory.createTitledBorder("Rekonstruiertes Bild");
 		reconstructedViewBorder.setTitleColor(Color.BLACK);
@@ -86,7 +87,6 @@ public class DPCM extends JPanel
 		c.insets = new Insets(0, borderWidth, 0, 0);
 		
 		//predictor methods
-		//TODO add empty method to change from
 		String [] methodNames = {"Methode wählen", "A (horizontal)", "B (vertikal)", "C (diagonal)", "A + B - C", "(A + B) / 2", "adaptiv"};
 		
 		method = new JComboBox<String>(methodNames);
@@ -107,6 +107,7 @@ public class DPCM extends JPanel
 				File input = openFile();
 				if(input != null) {
 					startView.loadImage(input);
+					startView = new ImageView(input);
 					startView.setMaxSize(new Dimension(maxWidth, maxHeight));
 					calculate();
 				}
