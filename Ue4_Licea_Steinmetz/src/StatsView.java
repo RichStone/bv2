@@ -209,4 +209,57 @@ public class StatsView extends JPanel {
 		}
 		return allPixels;
 	}
+	
+	int getMinimumMinusOnePercent() 
+	/*
+	 * This method returns the lowest histogram value
+	 * that is greater than 1%
+	 */
+	{
+		
+		//our value to return, for lowest index
+		int lowIndex = 0;
+		
+		//gets the total pixels in our image.
+		int pixelSum = getPixelSum();
+		
+		//calculates the number of pixels to determine 1% cutoff
+		int onePercentCutoff = (int) Math.round (pixelSum * 0.01);
+		
+		//adds up values within index until we reach 1% threshold
+		int runningSumWithinIndex = 0;
+		
+		for (int i = 0; runningSumWithinIndex < onePercentCutoff; i++) {
+			runningSumWithinIndex += histogram[i];
+			lowIndex = i;
+		}
+		return lowIndex;
+	}
+	
+	//TODO complete this method.
+	int getMaximumMinusOnePercent() 
+	/*
+	 * This method returns the highest histogram value
+	 * that is less than 99%.
+	 */
+	{
+		
+		//our value to return, for lowest index
+		int highIndex = 0;
+		
+		//starts with sum of pixels of our image
+		int pixelSum = getPixelSum();
+		
+		//calculates the number of pixels to determine 99% cutoff
+		int nintyNinePercentCutoff = (int) Math.round (pixelSum * 0.99);
+		
+		//subtracts values within index until we reach 99% threshold
+		//int runningSumWithinIndex = pixelSum;
+		
+		for (int i = histogram.length - 1; nintyNinePercentCutoff < pixelSum; i--) {
+			pixelSum -= histogram[i];
+			highIndex = i;
+		}
+		return highIndex;
+	}
 }

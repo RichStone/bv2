@@ -85,51 +85,7 @@ public class ImageAnalysis extends JPanel {
         JButton autoContrast = new JButton("Auto Contrast");
         autoContrast.addActionListener(new ActionListener() {
         	public void actionPerformed(ActionEvent e) {
-        		
-        		int [] newImage = imgView.getPixels();
-        		
-        		/*
-        		 * basic formula for auto contrasting. Linear operation.
-        		 * f_autoContrast(a) = a_min + (a - a_low)*((a_max - a_min)/(a_hi-a_low))
-        		 */
-        		
-        		int image_low, image_high, absolute_min, absolute_max;
-        		
-      
-        		image_low = statsView.getMin();
-        		image_high = statsView.getMax();
-        		absolute_max = 255;
-        		absolute_min = 0;
-        		
-        		for(int i = 0; i < origPix.length; i++) {
-            		//get pixel
-            		int oldPx = origPix[i] & 0xff;
-            		
-            		/*
-            		 * basic formula for auto contrasting. Linear operation.
-            		 * f_autoContrast(a) = a_min + (a - a_low)*((a_max - a_min)/(a_hi-a_low))
-            		 */
-            		int newPx = (int) (absolute_min + (oldPx - image_low) * ((absolute_max - absolute_min)/(image_high - image_low)));
-            		//over-/underflow handling
-        			if(newPx < 0) {
-        				newPx = 0;
-        			}
-        			if(newPx > 255) {
-        				newPx = 255; 
-        			}
-            		newImage[i] = (0xFF << 24) | (newPx << 16) | (newPx << 8) | newPx;
-            		
-            		//contribute to histogram statistics
-            		histogramPixels[newPx]++;
-            	}
-        	
-        		imgView.setPixels(newImage);
-        		histoView.setHistogram(histogramPixels);
-            	statsView.setHistogram(histogramPixels);
-        		
-        		histoView.update();
-        		statsView.update();
-        		imgView.applyChanges();
+        		autocontrast();
         	}      	
 	    });
         
@@ -204,23 +160,28 @@ public class ImageAnalysis extends JPanel {
         
         // brightness slider
         brightnessSlider = new JSlider(-graySteps, graySteps, 0);
-		TitledBorder titBorder = BorderFactory.createTitledBorder("Brightness");
+		TitledBorder titBorder = BorderFactory.createTitledBorder("Brightness: 0");
 		titBorder.setTitleColor(Color.GRAY);
         brightnessSlider.setBorder(titBorder);
         brightnessSlider.addChangeListener(new ChangeListener() {
         	public void stateChanged(ChangeEvent e) {
-        		processImage();				
+        		processImage();
+        		int adjustedBrightnessValue = brightnessSlider.getValue();
+        		titBorder.setTitle("Brightness: " + adjustedBrightnessValue);
         	}        	
         });
         
         // brightness slider
         contrastSlider = new JSlider(0, 100, 10);
-        TitledBorder titBorderContrast = BorderFactory.createTitledBorder("Contrast");
+        TitledBorder titBorderContrast = BorderFactory.createTitledBorder("Contrast: 10");
         titBorderContrast.setTitleColor(Color.GRAY);
         contrastSlider.setBorder(titBorderContrast);
         contrastSlider.addChangeListener(new ChangeListener() {
         	public void stateChanged(ChangeEvent e) {
+        		
         		processImage();
+        		int adjustedContrastValue = contrastSlider.getValue();
+        		titBorderContrast.setTitle("Contrast: " + adjustedContrastValue);
         	}
         });
         
@@ -250,6 +211,25 @@ public class ImageAnalysis extends JPanel {
         
         // perform the initial rotation
         processImage();
+	}
+	
+	private void autocontrast() {
+		int image_low, image_high, h, c;
+		 
+		
+		image_low = (int) Math.round (statsView.getMinimumMinusOnePercent());
+		//System.out.println("Value just above 1% is " + image_low);
+		
+		image_high = (int) Math.round (statsView.getMaximumMinusOnePercent());
+		//System.out.println("Value just below 99% is " + image_high);
+
+		h = (int) Math.round( (double) (128 - ( (image_low + image_high) / 2) ));
+		c = (int) Math.round(10.0 * (255.0 / (image_high - image_low)));
+
+		brightnessSlider.setValue(h);
+		contrastSlider.setValue(c);
+		
+		processImage();
 	}
 	
 

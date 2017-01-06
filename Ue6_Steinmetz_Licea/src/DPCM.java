@@ -227,7 +227,7 @@ public class DPCM extends JPanel
 				int e = valX - valA;
 				
 				//set s for the reconstruction
-				int s = valA - e;
+				int s = valX - e;
 				
 				//tune 
 				e += 128;
@@ -283,7 +283,7 @@ public class DPCM extends JPanel
 				int e = valX - valA;
 				
 				//set s for the reconstruction
-				int s = valA - e;
+				int s = valX - e;
 				
 				//tune 
 				e += 128;
@@ -339,7 +339,7 @@ public class DPCM extends JPanel
 				int e = valX - valA;
 				
 				//set s for the reconstruction
-				int s = valA - e;
+				int s = valX - e;
 				
 				//tune 
 				e += 128;
@@ -377,11 +377,6 @@ public class DPCM extends JPanel
 				int posB = (y - 1) * imgWidth + x;
 				int posC = (y - 1) * imgWidth + (x - 1);
 				
-				//upper edge handling
-				if(posX >= pixelsOld.length) {
-					continue;
-				}
-				
 				//value of the pixel X of a C-B-A-X square kernel
 				int valX = pixelsOld[posX] & 0xff;
 				
@@ -396,13 +391,12 @@ public class DPCM extends JPanel
 				//set searched value
 				int valSum = valA + valB - valC;
 				//handle overflow
-				if(valSum < 0 || valSum > 255) valSum = 128;
 				
 				//calculate e
 				int e = valX - valSum;
 				
 				//set s for the reconstruction
-				int s = valA - e;
+				int s = valX - e;
 				
 				//tune 
 				e += 128;
@@ -455,13 +449,13 @@ public class DPCM extends JPanel
 				//set searched value
 				int valSum = (valA + valB) / 2;
 				//handle overflow
-				if(valSum < 0 || valSum > 255) valSum = 128;
+//				if(valSum < 0 || valSum > 255) valSum = 128;
 				
 				//calculate e
 				int e = valX - valSum;
 				
 				//set s for the reconstruction
-				int s = valA - e;
+				int s = valX - e;
 				
 				//tune 
 				e += 128;
@@ -524,13 +518,13 @@ public class DPCM extends JPanel
 					valTarget = valA;
 				}
 				//handle overflow
-				if(valTarget < 0 || valTarget > 255) valTarget = 128;
+//				if(valTarget < 0 || valTarget > 255) valTarget = 128;
 				
 				//calculate e
 				int e = valX - valTarget;
 				
 				//set s for the reconstruction
-				int s = valTarget - e;
+				int s = valX - e;
 				
 				//tune e
 				e += 128;
