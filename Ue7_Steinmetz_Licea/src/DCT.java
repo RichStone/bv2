@@ -24,7 +24,7 @@ import javax.swing.JScrollPane;
 import javax.swing.border.TitledBorder;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
-public class DPCM extends JPanel 
+public class DCT extends JPanel 
 {
 	private static final long serialVersionUID = 1L;
 	private static final int borderWidth = 5;
@@ -49,7 +49,7 @@ public class DPCM extends JPanel
 	private static double entropyPredictor;
 	private static double entropyReconstructed;
 	
-	public DPCM() 
+	public DCT() 
 	{
 		super(new BorderLayout(borderWidth, borderWidth));
 		
@@ -227,7 +227,7 @@ public class DPCM extends JPanel
 				int e = valX - valA;
 				
 				//set s for the reconstruction
-				int s = valA + e;
+				int s = valX - e;
 				
 				//tune 
 				e += 128;
@@ -283,13 +283,8 @@ public class DPCM extends JPanel
 				int e = valX - valA;
 				
 				//set s for the reconstruction
-				int s = valA + e;
+				int s = valX - e;
 				
-//				System.out.println(posX);
-//				System.out.println("x " + valX);
-//				System.out.println("a " + valA);
-//				System.out.println("e " + e);
-//				System.out.println("s " + s);
 				//tune 
 				e += 128;
 				if(e > 255) {
@@ -323,6 +318,11 @@ public class DPCM extends JPanel
 				int posX = y * imgWidth + x;
 				int posA = (y - 1) * imgWidth + (x - 1);
 				
+				//upper edge handling
+				if(posX >= pixelsOld.length) {
+					continue;
+				}
+				
 				//value of the pixel X of a C-B-A-X square kernel
 				int valX = pixelsOld[posX] & 0xff;
 				
@@ -339,7 +339,7 @@ public class DPCM extends JPanel
 				int e = valX - valA;
 				
 				//set s for the reconstruction
-				int s = valA + e;
+				int s = valX - e;
 				
 				//tune 
 				e += 128;
@@ -396,7 +396,7 @@ public class DPCM extends JPanel
 				int e = valX - valSum;
 				
 				//set s for the reconstruction
-				int s = valSum + e;
+				int s = valX - e;
 				
 				//tune 
 				e += 128;
@@ -432,6 +432,11 @@ public class DPCM extends JPanel
 				int posA = y * imgWidth + (x - 1);
 				int posB = (y - 1) * imgWidth + x;
 				
+				//upper edge handling
+				if(posX >= pixelsOld.length) {
+					continue;
+				}
+				
 				//value of the pixel X of a C-B-A-X square kernel
 				int valX = pixelsOld[posX] & 0xff;
 				
@@ -450,7 +455,7 @@ public class DPCM extends JPanel
 				int e = valX - valSum;
 				
 				//set s for the reconstruction
-				int s = valSum + e;
+				int s = valX - e;
 				
 				//tune 
 				e += 128;
@@ -487,6 +492,11 @@ public class DPCM extends JPanel
 				int posB = (y - 1) * imgWidth + x;
 				int posC = (y - 1) * imgWidth + (x - 1);
 				
+				//upper edge handling
+				if(posX >= pixelsOld.length) {
+					continue;
+				}
+				
 				//value of the pixel X of a C-B-A-X square kernel
 				int valX = pixelsOld[posX] & 0xff;
 				
@@ -514,7 +524,7 @@ public class DPCM extends JPanel
 				int e = valX - valTarget;
 				
 				//set s for the reconstruction
-				int s = valTarget + e;
+				int s = valX - e;
 				
 				//tune e
 				e += 128;
@@ -561,7 +571,7 @@ public class DPCM extends JPanel
 		frame = new JFrame("DPCM");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         
-        JComponent newContentPane = new DPCM();
+        JComponent newContentPane = new DCT();
         newContentPane.setOpaque(true); //content panes must be opaque
         frame.setContentPane(newContentPane);
 
